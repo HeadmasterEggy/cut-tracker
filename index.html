@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="减脂记录">
+<meta name="theme-color" content="#0f172a">
+<title>减脂记录</title>
+<style>
+  :root {
+    --bg: #0f172a; --card: #1e293b; --line: #334155; --text: #e2e8f0; --muted: #94a3b8;
+    --accent: #22c55e; --warn: #f59e0b; --bad: #ef4444; --blue: #38bdf8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.5 -apple-system, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    padding: env(safe-area-inset-top) 0 calc(72px + env(safe-area-inset-bottom));
+  }
+  header { padding: 14px 16px 4px; display: flex; align-items: center; justify-content: space-between; }
+  header h1 { font-size: 20px; margin: 0; }
+  main { padding: 8px 12px; max-width: 640px; margin: 0 auto; }
+  .card { background: var(--card); border-radius: 14px; padding: 14px; margin-bottom: 12px; }
+  .card h2 { font-size: 15px; margin: 0 0 10px; color: var(--muted); font-weight: 600; }
+  .row { display: flex; gap: 8px; align-items: center; }
+  .row > * { flex: 1; min-width: 0; }
+  .big { font-size: 34px; font-weight: 700; line-height: 1.1; }
+  .muted { color: var(--muted); font-size: 13px; }
+  .ok { color: var(--accent); } .warn { color: var(--warn); } .bad { color: var(--bad); }
+  input, select, button {
+    font: inherit; color: var(--text); background: #0b1222; border: 1px solid var(--line);
+    border-radius: 10px; padding: 10px; width: 100%;
+  }
+  button { background: var(--accent); color: #052e13; border: none; font-weight: 600; cursor: pointer; }
+  button.ghost { background: transparent; color: var(--text); border: 1px solid var(--line); }
+  button.small { padding: 6px 10px; width: auto; font-size: 13px; }
+  button.del { background: transparent; color: var(--muted); border: none; width: auto; padding: 4px 8px; font-size: 18px; }
+  label { display: block; font-size: 13px; color: var(--muted); margin: 8px 0 4px; }
+  .bar { height: 10px; background: #0b1222; border-radius: 6px; overflow: hidden; margin: 6px 0 2px; }
+  .bar > div { height: 100%; background: var(--accent); transition: width .3s; }
+  .list { list-style: none; margin: 0; padding: 0; }
+  .list li { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .list li:last-child { border-bottom: none; }
+  .list .name { flex: 1; min-width: 0; }
+  .list .num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .chip { background: #0b1222; border: 1px solid var(--line); border-radius: 999px; padding: 5px 10px; font-size: 13px; cursor: pointer; }
+  .chip.on { border-color: var(--accent); color: var(--accent); }
+  nav {
+    position: fixed; bottom: 0; left: 0; right: 0; display: flex; background: #0b1222;
+    border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom);
+  }
+  nav button { background: none; color: var(--muted); border-radius: 0; padding: 12px 0; font-weight: 500; }
+  nav button.on { color: var(--accent); }
+  .tab { display: none; } .tab.on { display: block; }
+  .datebar { display: flex; align-items: center; gap: 8px; }
+  .datebar button { width: 44px; }
+  .datebar .d { flex: 1; text-align: center; font-weight: 600; }
+  svg text { fill: var(--muted); font-size: 11px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stat { background: #0b1222; border-radius: 10px; padding: 10px; }
+  .stat b { display: block; font-size: 20px; }
+  .toast { position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%); background: #334155; padding: 8px 14px; border-radius: 10px; font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none; }
+  .toast.on { opacity: 1; }
+</style>
+</head>
+<body>
+<header>
+  <h1>减脂记录</h1>
+  <span class="muted" id="hdrWeight"></span>
+</header>
+
+<main>
+  <!-- 今天 -->
+  <section class="tab on" id="tab-today">
+    <div class="card">
+      <div class="datebar">
+        <button class="ghost" id="prevDay">‹</button>
+        <div class="d" id="dateLabel"></div>
+        <button class="ghost" id="nextDay">›</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <div>
+          <div class="muted">还能吃</div>
+          <div class="big" id="kcalLeft">0</div>
+          <div class="muted" id="kcalLine"></div>
+        </div>
+        <div style="text-align:right">
+          <div class="muted">蛋白质</div>
+          <div class="big" id="proteinNow">0</div>
+          <div class="muted" id="proteinLine"></div>
+        </div>
+      </div>
+      <div class="bar"><div id="kcalBar"></div></div>
+      <div class="bar"><div id="proteinBar" style="background:var(--blue)"></div></div>
+      <div class="muted" id="dayHint" style="margin-top:6px"></div>
+    </div>
+
+    <div class="card">
+      <h2>添加食物</h2>
+      <div class="chips" id="foodChips"></div>
+      <div class="row">
+        <select id="foodSel"></select>
+        <input id="foodAmt" type="number" inputmode="decimal" placeholder="数量" style="max-width:110px">
+      </div>
+      <div class="muted" id="foodPreview" style="margin:6px 0"></div>
+      <button id="addFood">加到今天</button>
+      <details style="margin-top:10px">
+        <summary class="muted">手动输入（外食、不在列表里的）</summary>
+        <div class="row" style="margin-top:8px">
+          <input id="cName" placeholder="名称">
+          <input id="cKcal" type="number" inputmode="decimal" placeholder="热量 kcal" style="max-width:110px">
+          <input id="cProt" type="number" inputmode="decimal" placeholder="蛋白 g" style="max-width:90px">
+        </div>
+        <button class="ghost" id="addCustom" style="margin-top:8px">加到今天</button>
+      </details>
+    </div>
+
+    <div class="card">
+      <h2>今天吃了</h2>
+      <ul class="list" id="foodList"></ul>
+    </div>
+
+    <div class="card">
+      <h2>今天运动</h2>
+      <ul class="list" id="exList"></ul>
+      <div class="row" style="margin-top:8px">
+        <select id="exType">
+          <option>快走</option><option>力量训练</option><option>骑车</option>
+          <option>跑步</option><option>跑外卖</option><option>其他</option>
+        </select>
+        <input id="exMin" type="number" inputmode="numeric" placeholder="分钟" style="max-width:90px">
+        <input id="exKcal" type="number" inputmode="numeric" placeholder="kcal(可选)" style="max-width:110px">
+      </div>
+      <button class="ghost" id="addEx" style="margin-top:8px">记录运动</button>
+      <div class="muted" style="margin-top:6px">运动消耗只做记录，不加回可吃热量（目标里已经算了日常活动，手表也常常算高）。</div>
+    </div>
+
+    <div class="card">
+      <button class="ghost" id="copyDay">复制今天的汇总（发给 AI 或自己看）</button>
+    </div>
+  </section>
+
+  <!-- 体重 -->
+  <section class="tab" id="tab-weight">
+    <div class="card">
+      <h2>记录体重（早上空腹、上完厕所后称）</h2>
+      <div class="row">
+        <input id="wDate" type="date">
+        <input id="wVal" type="number" inputmode="decimal" step="0.1" placeholder="kg">
+      </div>
+      <button id="addW" style="margin-top:8px">保存</button>
+    </div>
+    <div class="card">
+      <h2>趋势（点 = 每天，线 = 7 天平均）</h2>
+      <div id="wChart"></div>
+    </div>
+    <div class="card">
+      <div class="grid2" id="wStats"></div>
+    </div>
+    <div class="card">
+      <h2>历史</h2>
+      <ul class="list" id="wList"></ul>
+    </div>
+  </section>
+
+  <!-- 食物库 -->
+  <section class="tab" id="tab-foods">
+    <div class="card">
+      <h2>食物库（按标签或估算填写）</h2>
+      <ul class="list" id="libList"></ul>
+    </div>
+    <div class="card">
+      <h2>新增 / 修改食物</h2>
+      <label>名称（同名会覆盖）</label>
+      <input id="lName" placeholder="如：鸡胸肉（熟）">
+      <div class="row">
+        <div><label>基准数量</label><input id="lPer" type="number" inputmode="decimal" value="100"></div>
+        <div><label>单位</label>
+          <select id="lUnit"><option>g</option><option>ml</option><option>个</option><option>份</option></select></div>
+      </div>
+      <div class="row">
+        <div><label>热量 kcal</label><input id="lKcal" type="number" inputmode="decimal"></div>
+        <div><label>蛋白质 g</label><input id="lProt" type="number" inputmode="decimal"></div>
+      </div>
+      <div class="muted" style="margin-top:6px">标签上是 kJ 的话除以 4.184 就是 kcal。</div>
+      <button id="saveLib" style="margin-top:10px">保存</button>
+    </div>
+  </section>
+
+  <!-- 设置 -->
+  <section class="tab" id="tab-settings">
+    <div class="card">
+      <h2>身体数据</h2>
+      <div class="row">
+        <div><label>性别</label><select id="sSex"><option value="m">男</option><option value="f">女</option></select></div>
+        <div><label>年龄</label><input id="sAge" type="number" inputmode="numeric"></div>
+        <div><label>身高 cm</label><input id="sHeight" type="number" inputmode="decimal"></div>
+      </div>
+      <div class="row">
+        <div><label>起始体重 kg</label><input id="sStart" type="number" inputmode="decimal" step="0.1"></div>
+        <div><label>目标体重 kg</label><input id="sGoal" type="number" inputmode="decimal" step="0.1"></div>
+      </div>
+      <label>日常活动量</label>
+      <select id="sAct">
+        <option value="1.2">久坐（基本不动）</option>
+        <option value="1.375">轻度（每天走路 / 偶尔运动）</option>
+        <option value="1.5">中度（经常走动 + 每周练 3–4 次）</option>
+        <option value="1.65">较高（体力活 / 天天运动）</option>
+      </select>
+      <div class="row">
+        <div><label>每日热量缺口 kcal</label><input id="sDef" type="number" inputmode="numeric"></div>
+        <div><label>蛋白质 g/kg 体重</label><input id="sProtK" type="number" inputmode="decimal" step="0.1"></div>
+      </div>
+      <button id="saveSet" style="margin-top:12px">保存设置</button>
+    </div>
+    <div class="card">
+      <h2>计算结果</h2>
+      <div class="grid2" id="calcBox"></div>
+      <div class="muted" id="calcNote" style="margin-top:8px"></div>
+    </div>
+    <div class="card">
+      <h2>数据</h2>
+      <div class="muted" style="margin-bottom:8px">数据只存在这台设备的浏览器里，换手机或清缓存前记得导出。</div>
+      <div class="row">
+        <button class="ghost" id="exportBtn">导出备份</button>
+        <button class="ghost" id="importBtn">导入备份</button>
+      </div>
+      <input type="file" id="importFile" accept="application/json" style="display:none">
+    </div>
+  </section>
+</main>
+
+<nav>
+  <button class="on" data-tab="today">今天</button>
+  <button data-tab="weight">体重</button>
+  <button data-tab="foods">食物库</button>
+  <button data-tab="settings">设置</button>
+</nav>
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY = 'cut-tracker-v1';
+const clone = o => JSON.parse(JSON.stringify(o));
+
+// 常见食物的估算值（每 per 单位）。按包装标签修改会更准。
+const DEFAULT_FOODS = [
+  { name: '鸡胸肉（熟）', per: 100, unit: 'g', kcal: 165, protein: 31 },
+  { name: '牛肉（熟，带点肥）', per: 100, unit: 'g', kcal: 220, protein: 27 },
+  { name: '米饭（熟）', per: 100, unit: 'g', kcal: 130, protein: 2.7 },
+  { name: '西兰花', per: 100, unit: 'g', kcal: 34, protein: 2.8 },
+  { name: '鸡蛋', per: 1, unit: '个', kcal: 70, protein: 6.3 },
+  { name: '全脂奶', per: 100, unit: 'ml', kcal: 65, protein: 3.4 },
+  { name: '低脂奶', per: 100, unit: 'ml', kcal: 45, protein: 3.6 },
+  { name: 'Just Right 麦片', per: 100, unit: 'g', kcal: 363, protein: 8.1 },
+  { name: '腰果 / 混合坚果', per: 100, unit: 'g', kcal: 580, protein: 18 },
+  { name: '草莓', per: 100, unit: 'g', kcal: 32, protein: 0.7 },
+  { name: 'Lean Cuisine 鸡肉意面', per: 1, unit: '份', kcal: 340, protein: 20 },
+  { name: '无糖希腊酸奶', per: 100, unit: 'g', kcal: 95, protein: 9 },
+  { name: '燕麦片（rolled oats）', per: 100, unit: 'g', kcal: 375, protein: 12 },
+];
+
+const DEFAULT_STATE = {
+  settings: { sex: 'm', age: 25, height: 175, start: 75, goal: 70, act: 1.375, deficit: 800, protK: 1.8 },
+  foods: DEFAULT_FOODS,
+  days: {},      // 'YYYY-MM-DD': { foods: [{name,kcal,protein,label}], ex: [{type,min,kcal}] }
+  weights: {},   // 'YYYY-MM-DD': kg
+  setupDone: false,
+};
+
+let S = load();
+let curDate = today();
+
+function load() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) return Object.assign(clone(DEFAULT_STATE), JSON.parse(raw));
+  } catch (e) {}
+  return clone(DEFAULT_STATE);
+}
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { toast('保存失败：浏览器存储不可用'); }
+}
+
+const $ = id => document.getElementById(id);
+const r1 = n => Math.round(n * 10) / 10;
+const r0 = n => Math.round(n);
+function pad(n) { return String(n).padStart(2, '0'); }
+function fmt(d) { return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; }
+function today() { return fmt(new Date()); }
+function shift(ds, n) { const d = new Date(ds + 'T12:00:00'); d.setDate(d.getDate() + n); return fmt(d); }
+function day(ds) { return S.days[ds] || (S.days[ds] = { foods: [], ex: [] }); }
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('on'); setTimeout(() => t.classList.remove('on'), 1600); }
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
+// ---------- 计算 ----------
+function latestWeight() {
+  const keys = Object.keys(S.weights).sort();
+  return keys.length ? S.weights[keys[keys.length - 1]] : Number(S.settings.start);
+}
+function plan() {
+  const s = S.settings, w = latestWeight();
+  const bmr = 10 * w + 6.25 * s.height - 5 * s.age + (s.sex === 'm' ? 5 : -161);
+  const tdee = bmr * Number(s.act);
+  const floor = s.sex === 'm' ? 1500 : 1200;
+  const raw = tdee - Number(s.deficit);
+  const target = Math.max(raw, floor);
+  return { w, bmr, tdee, target, floor, clamped: raw < floor, protein: w * Number(s.protK) };
+}
+function totals(ds) {
+  const d = S.days[ds] || { foods: [], ex: [] };
+  return {
+    kcal: d.foods.reduce((a, f) => a + f.kcal, 0),
+    protein: d.foods.reduce((a, f) => a + f.protein, 0),
+    exMin: d.ex.reduce((a, e) => a + (Number(e.min) || 0), 0),
+    exKcal: d.ex.reduce((a, e) => a + (Number(e.kcal) || 0), 0),
+  };
+}
+
+// ---------- 今天 ----------
+function renderToday() {
+  const p = plan(), t = totals(curDate), d = day(curDate);
+  const isToday = curDate === today();
+  $('dateLabel').textContent = (isToday ? '今天 · ' : '') + curDate;
+  const left = p.target - t.kcal;
+  $('kcalLeft').textContent = r0(left);
+  $('kcalLeft').className = 'big ' + (left < -150 ? 'bad' : left < 0 ? 'warn' : 'ok');
+  $('kcalLine').textContent = `已吃 ${r0(t.kcal)} / 目标 ${r0(p.target)} kcal`;
+  $('proteinNow').textContent = r0(t.protein) + 'g';
+  $('proteinLine').textContent = `目标 ${r0(p.protein)}g`;
+  $('kcalBar').style.width = Math.min(100, t.kcal / p.target * 100) + '%';
+  $('kcalBar').style.background = left < 0 ? 'var(--warn)' : 'var(--accent)';
+  $('proteinBar').style.width = Math.min(100, t.protein / p.protein * 100) + '%';
+
+  let hint = '';
+  const hour = new Date().getHours();
+  if (t.kcal > 0 && isToday && hour >= 20 && t.kcal < p.floor) hint = `⚠️ 今天才 ${r0(t.kcal)} kcal，低于 ${p.floor}，晚上补点蛋白质（鸡胸/牛肉/鸡蛋/牛奶）。`;
+  else if (t.kcal > 0 && t.protein < p.protein * 0.6 && t.kcal > p.target * 0.6) hint = '蛋白质偏少，剩下的热量优先给肉、蛋、奶。';
+  else if (left < 0) hint = '今天超了一点，没关系，明天正常吃，别饿回来。';
+  $('dayHint').textContent = hint;
+
+  $('foodList').innerHTML = d.foods.length ? d.foods.map((f, i) => `
+    <li><span class="name">${esc(f.label || f.name)}</span>
+      <span class="num">${r0(f.kcal)} kcal<br><span class="muted">${r1(f.protein)}g 蛋白</span></span>
+      <button class="del" data-food="${i}">×</button></li>`).join('')
+    : '<li class="muted">还没记录</li>';
+
+  $('exList').innerHTML = d.ex.length ? d.ex.map((e, i) => `
+    <li><span class="name">${esc(e.type)}</span>
+      <span class="num">${e.min || 0} 分钟${e.kcal ? ` · ${e.kcal} kcal` : ''}</span>
+      <button class="del" data-ex="${i}">×</button></li>`).join('')
+    : '<li class="muted">还没记录</li>';
+
+  renderFoodPicker();
+  $('hdrWeight').textContent = `${r1(p.w)} kg → ${S.settings.goal} kg`;
+}
+
+function renderFoodPicker() {
+  const sel = $('foodSel'), prev = sel.value;
+  sel.innerHTML = S.foods.map((f, i) => `<option value="${i}">${esc(f.name)}（每${f.per}${f.unit} ${f.kcal}kcal）</option>`).join('');
+  if (prev && S.foods[prev]) sel.value = prev;
+  // 最近用过的食物做成快捷按钮
+  const recent = [];
+  Object.keys(S.days).sort().reverse().slice(0, 14).forEach(k => S.days[k].foods.forEach(f => {
+    if (!recent.includes(f.name) && S.foods.some(x => x.name === f.name)) recent.push(f.name);
+  }));
+  const chips = (recent.length ? recent : S.foods.slice(0, 6).map(f => f.name)).slice(0, 8);
+  $('foodChips').innerHTML = chips.map(n => `<span class="chip" data-chip="${esc(n)}">${esc(n)}</span>`).join('');
+  updatePreview();
+}
+function updatePreview() {
+  const f = S.foods[$('foodSel').value];
+  if (!f) { $('foodPreview').textContent = ''; return; }
+  $('foodAmt').placeholder = f.unit;
+  const amt = Number($('foodAmt').value);
+  $('foodPreview').textContent = amt > 0
+    ? `${amt}${f.unit} = ${r0(f.kcal * amt / f.per)} kcal · ${r1(f.protein * amt / f.per)}g 蛋白质`
+    : `输入数量（${f.unit}）`;
+}
+
+$('foodSel').onchange = updatePreview;
+$('foodAmt').oninput = updatePreview;
+$('foodChips').onclick = e => {
+  const n = e.target.dataset.chip; if (!n) return;
+  const i = S.foods.findIndex(f => f.name === n);
+  if (i >= 0) { $('foodSel').value = i; $('foodAmt').focus(); updatePreview(); }
+};
+$('addFood').onclick = () => {
+  const f = S.foods[$('foodSel').value], amt = Number($('foodAmt').value);
+  if (!f || !(amt > 0)) return toast('先填数量');
+  day(curDate).foods.push({
+    name: f.name, label: `${f.name} ${amt}${f.unit}`,
+    kcal: f.kcal * amt / f.per, protein: f.protein * amt / f.per,
+  });
+  $('foodAmt').value = ''; save(); renderToday(); toast('已添加');
+};
+$('addCustom').onclick = () => {
+  const name = $('cName').value.trim(), kcal = Number($('cKcal').value), protein = Number($('cProt').value) || 0;
+  if (!name || !(kcal >= 0) || $('cKcal').value === '') return toast('填名称和热量');
+  day(curDate).foods.push({ name, label: name, kcal, protein });
+  $('cName').value = $('cKcal').value = $('cProt').value = ''; save(); renderToday(); toast('已添加');
+};
+$('foodList').onclick = e => {
+  const i = e.target.dataset.food; if (i === undefined) return;
+  day(curDate).foods.splice(i, 1); save(); renderToday();
+};
+$('addEx').onclick = () => {
+  const min = Number($('exMin').value), kcal = Number($('exKcal').value) || 0;
+  if (!(min > 0)) return toast('填分钟数');
+  day(curDate).ex.push({ type: $('exType').value, min, kcal });
+  $('exMin').value = $('exKcal').value = ''; save(); renderToday(); toast('已记录');
+};
+$('exList').onclick = e => {
+  const i = e.target.dataset.ex; if (i === undefined) return;
+  day(curDate).ex.splice(i, 1); save(); renderToday();
+};
+$('prevDay').onclick = () => { curDate = shift(curDate, -1); renderToday(); };
+$('nextDay').onclick = () => { if (curDate < today()) { curDate = shift(curDate, 1); renderToday(); } };
+$('copyDay').onclick = async () => {
+  const p = plan(), t = totals(curDate), d = day(curDate);
+  const lines = [
+    `${curDate} 饮食运动汇总`,
+    `目标 ${r0(p.target)} kcal / 蛋白 ${r0(p.protein)}g`,
+    `已吃 ${r0(t.kcal)} kcal / 蛋白 ${r0(t.protein)}g`,
+    '', '吃了：', ...d.foods.map(f => `- ${f.label || f.name}：${r0(f.kcal)} kcal，${r1(f.protein)}g 蛋白`),
+  ];
+  if (d.ex.length) lines.push('', '运动：', ...d.ex.map(e => `- ${e.type} ${e.min} 分钟${e.kcal ? `，约 ${e.kcal} kcal` : ''}`));
+  if (S.weights[curDate]) lines.push('', `体重：${S.weights[curDate]} kg`);
+  const text = lines.join('\n');
+  try { await navigator.clipboard.writeText(text); toast('已复制'); }
+  catch (e) { prompt('复制下面的内容：', text); }
+};
+
+// ---------- 体重 ----------
+function weightSeries() {
+  const keys = Object.keys(S.weights).sort();
+  return keys.map((k, i) => {
+    const from = shift(k, -6);
+    const win = keys.filter(x => x >= from && x <= k).map(x => S.weights[x]);
+    return { date: k, w: S.weights[k], avg: win.reduce((a, b) => a + b, 0) / win.length };
+  });
+}
+function renderWeight() {
+  $('wDate').value = $('wDate').value || today();
+  const ser = weightSeries();
+  // 图
+  if (ser.length < 2) {
+    $('wChart').innerHTML = '<div class="muted">记录两天以上就会出现趋势图。</div>';
+  } else {
+    const W = 600, H = 220, P = { l: 36, r: 10, t: 10, b: 24 };
+    const t0 = new Date(ser[0].date).getTime(), t1 = new Date(ser[ser.length - 1].date).getTime();
+    const vals = ser.map(s => s.w).concat([Number(S.settings.goal)]);
+    const lo = Math.floor(Math.min(...vals) - 0.5), hi = Math.ceil(Math.max(...vals) + 0.5);
+    const x = d => P.l + (new Date(d).getTime() - t0) / Math.max(1, t1 - t0) * (W - P.l - P.r);
+    const y = v => P.t + (hi - v) / (hi - lo) * (H - P.t - P.b);
+    let g = '';
+    const step = Math.max(1, Math.ceil((hi - lo) / 5));
+    for (let v = lo; v <= hi; v += step) g += `<line x1="${P.l}" x2="${W - P.r}" y1="${y(v)}" y2="${y(v)}" stroke="#334155"/><text x="4" y="${y(v) + 4}">${v}</text>`;
+    const gy = y(Number(S.settings.goal));
+    g += `<line x1="${P.l}" x2="${W - P.r}" y1="${gy}" y2="${gy}" stroke="#22c55e" stroke-dasharray="4 4"/>`;
+    g += ser.map(s => `<circle cx="${x(s.date)}" cy="${y(s.w)}" r="3" fill="#94a3b8"/>`).join('');
+    g += `<polyline fill="none" stroke="#38bdf8" stroke-width="2.5" points="${ser.map(s => `${x(s.date)},${y(s.avg)}`).join(' ')}"/>`;
+    g += `<text x="${P.l}" y="${H - 6}">${ser[0].date.slice(5)}</text><text x="${W - P.r}" y="${H - 6}" text-anchor="end">${ser[ser.length - 1].date.slice(5)}</text>`;
+    $('wChart').innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%">${g}</svg>`;
+  }
+  // 统计
+  const start = Number(S.settings.start), goal = Number(S.settings.goal);
+  const last = ser.length ? ser[ser.length - 1] : null;
+  let rate = null, eta = '—';
+  if (ser.length >= 2) {
+    const a = ser.find(s => s.date >= shift(last.date, -14)) || ser[0];
+    const days = (new Date(last.date) - new Date(a.date)) / 864e5;
+    if (days >= 3) rate = (last.avg - a.avg) / days * 7;
+    if (rate && rate < 0 && last.avg > goal) {
+      const weeks = (last.avg - goal) / -rate;
+      eta = shift(last.date, Math.round(weeks * 7));
+    }
+  }
+  $('wStats').innerHTML = `
+    <div class="stat"><span class="muted">7 天平均</span><b>${last ? r1(last.avg) : '—'} kg</b></div>
+    <div class="stat"><span class="muted">比起始</span><b class="${last && last.avg < start ? 'ok' : ''}">${last ? r1(last.avg - start) : '—'} kg</b></div>
+    <div class="stat"><span class="muted">最近每周</span><b>${rate === null ? '—' : r1(rate) + ' kg'}</b></div>
+    <div class="stat"><span class="muted">按这个速度到 ${goal}kg</span><b style="font-size:16px">${eta}</b></div>`;
+  $('wList').innerHTML = ser.slice().reverse().slice(0, 60).map(s =>
+    `<li><span class="name">${s.date}</span><span class="num">${s.w} kg <span class="muted">均 ${r1(s.avg)}</span></span>
+     <button class="del" data-w="${s.date}">×</button></li>`).join('') || '<li class="muted">还没记录</li>';
+}
+$('addW').onclick = () => {
+  const d = $('wDate').value, v = Number($('wVal').value);
+  if (!d || !(v > 20 && v < 400)) return toast('填一个合理的体重');
+  S.weights[d] = r1(v); $('wVal').value = ''; save(); renderWeight(); toast('已保存');
+};
+$('wList').onclick = e => {
+  const d = e.target.dataset.w; if (!d) return;
+  delete S.weights[d]; save(); renderWeight();
+};
+
+// ---------- 食物库 ----------
+function renderLib() {
+  $('libList').innerHTML = S.foods.map((f, i) => `
+    <li><span class="name" data-edit="${i}" style="cursor:pointer">${esc(f.name)}<br>
+      <span class="muted">每 ${f.per}${f.unit}</span></span>
+      <span class="num">${f.kcal} kcal<br><span class="muted">${f.protein}g 蛋白</span></span>
+      <button class="del" data-lib="${i}">×</button></li>`).join('');
+}
+$('libList').onclick = e => {
+  if (e.target.dataset.lib !== undefined) {
+    const f = S.foods[e.target.dataset.lib];
+    if (confirm(`删除「${f.name}」？`)) { S.foods.splice(e.target.dataset.lib, 1); save(); renderLib(); }
+    return;
+  }
+  const el = e.target.closest('[data-edit]'); if (!el) return;
+  const f = S.foods[el.dataset.edit];
+  $('lName').value = f.name; $('lPer').value = f.per; $('lUnit').value = f.unit;
+  $('lKcal').value = f.kcal; $('lProt').value = f.protein;
+  $('lName').scrollIntoView({ behavior: 'smooth', block: 'center' });
+};
+$('saveLib').onclick = () => {
+  const f = {
+    name: $('lName').value.trim(), per: Number($('lPer').value), unit: $('lUnit').value,
+    kcal: Number($('lKcal').value), protein: Number($('lProt').value) || 0,
+  };
+  if (!f.name || !(f.per > 0) || $('lKcal').value === '') return toast('名称、数量、热量要填');
+  const i = S.foods.findIndex(x => x.name === f.name);
+  if (i >= 0) S.foods[i] = f; else S.foods.push(f);
+  ['lName', 'lKcal', 'lProt'].forEach(id => $(id).value = ''); $('lPer').value = 100;
+  save(); renderLib(); toast('已保存');
+};
+
+// ---------- 设置 ----------
+const SET_FIELDS = { sSex: 'sex', sAge: 'age', sHeight: 'height', sStart: 'start', sGoal: 'goal', sAct: 'act', sDef: 'deficit', sProtK: 'protK' };
+function renderSettings() {
+  for (const [id, k] of Object.entries(SET_FIELDS)) $(id).value = S.settings[k];
+  const p = plan();
+  $('calcBox').innerHTML = `
+    <div class="stat"><span class="muted">基础代谢</span><b>${r0(p.bmr)}</b></div>
+    <div class="stat"><span class="muted">每天总消耗</span><b>${r0(p.tdee)}</b></div>
+    <div class="stat"><span class="muted">每天吃</span><b class="ok">${r0(p.target)}</b></div>
+    <div class="stat"><span class="muted">蛋白质</span><b>${r0(p.protein)} g</b></div>`;
+  const perWeek = (p.tdee - p.target) * 7 / 7700;
+  $('calcNote').textContent = `按当前体重 ${r1(p.w)}kg 计算，预计每周减约 ${r1(perWeek)} kg 脂肪。` +
+    (p.clamped ? ` 缺口太大，已按最低 ${p.floor} kcal 处理。` : '') +
+    (perWeek > 1 ? ' 每周超过 1kg 容易掉肌肉，建议缩小缺口。' : '');
+}
+$('saveSet').onclick = () => {
+  for (const [id, k] of Object.entries(SET_FIELDS)) {
+    const v = $(id).value;
+    S.settings[k] = k === 'sex' ? v : Number(v);
+  }
+  S.setupDone = true; save(); renderSettings(); renderToday(); toast('已保存');
+};
+
+// ---------- 备份 ----------
+$('exportBtn').onclick = () => {
+  const blob = new Blob([JSON.stringify(S, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = `cut-tracker-${today()}.json`; a.click();
+};
+$('importBtn').onclick = () => $('importFile').click();
+$('importFile').onchange = async e => {
+  const file = e.target.files[0]; if (!file) return;
+  try {
+    const data = JSON.parse(await file.text());
+    if (!data.settings || !data.days) throw new Error();
+    if (!confirm('导入会覆盖当前数据，继续？')) return;
+    S = Object.assign(clone(DEFAULT_STATE), data); save(); renderAll(); toast('已导入');
+  } catch (err) { toast('文件格式不对'); }
+};
+
+// ---------- 导航 ----------
+document.querySelector('nav').onclick = e => {
+  const t = e.target.dataset.tab; if (!t) return;
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+  document.querySelectorAll('.tab').forEach(s => s.classList.toggle('on', s.id === 'tab-' + t));
+  renderAll(); window.scrollTo(0, 0);
+};
+function renderAll() { renderToday(); renderWeight(); renderLib(); renderSettings(); }
+
+renderAll();
+if (!S.setupDone) {
+  document.querySelector('nav button[data-tab="settings"]').click();
+  toast('先填一下身体数据');
+}
+</script>
+</body>
+</html>
