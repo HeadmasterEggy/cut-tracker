@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""仓库检查：data/log.json 的结构，以及 index.html 里 <script> 的 JS 语法。
+"""仓库检查：data/log.json 的结构，以及 TypeScript 类型检查（tsc）。
 
 用法：python3 tools/check.py
 全部通过 exit 0；有问题逐条打印「哪里 + 该怎么改」并 exit 1。
-JS 语法检查需要 node；没装 node 时会明确说「没跑」，不算通过。
+类型检查需要先 npm ci；没装依赖时会明确说「没跑」，不算通过。
 """
-import json, re, shutil, subprocess, sys, tempfile
+import json, shutil, subprocess, sys
 from datetime import date
 from pathlib import Path
 
@@ -139,30 +139,25 @@ def check_log():
             err("coach", "应该是 {updated, text} 对象")
 
 
-def check_js():
+def check_ts():
     html = (ROOT / "index.html").read_text(encoding="utf-8")
-    scripts = re.findall(r"<script(?![^>]*\bsrc=)[^>]*>(.*?)</script>", html, re.S | re.I)
-    if not scripts:
-        err("index.html", "没找到内联 <script>")
+    if 'src="./src/main.ts"' not in html:
+        err("index.html", '找不到 <script type="module" src="./src/main.ts">，页面不会加载任何代码')
+    tsc = ROOT / "node_modules" / ".bin" / "tsc"
+    if not shutil.which("node") or not tsc.exists():
+        print("没跑：TypeScript 类型检查（没装 node 或没 npm ci）")
         return
-    node = shutil.which("node")
-    if not node:
-        print("没跑：JS 语法检查（没装 node）")
-        return
-    for i, js in enumerate(scripts, 1):
-        start = html[: html.find(js)].count("\n")
-        with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8") as t:
-            t.write("\n" * start + js)  # 补空行，让报错行号对上 index.html
-        r = subprocess.run([node, "--check", t.name], capture_output=True, text=True)
-        Path(t.name).unlink()
-        if r.returncode:
-            lines = r.stderr.replace(t.name, "index.html").strip().splitlines()
-            msg = "\n".join(l for l in lines if not l.startswith("    at ") and not l.startswith("Node.js"))
-            err(f"index.html 第 {i} 个 <script>", "JS 语法错误，页面会整个打不开：\n" + msg)
+    r = subprocess.run([str(tsc), "--noEmit", "--pretty", "false"], cwd=ROOT, capture_output=True, text=True)
+    if r.returncode:
+        out = (r.stdout + r.stderr).strip()
+        hint = ""
+        if "data/log.json" in out or "data-shape.ts" in out:
+            hint = "\n（data-shape.ts 报错 = data/log.json 的结构和 src/types.ts 的 LogData 对不上：用 tools/log.py 修数据，或者确实要加字段就改 types.ts）"
+        err("tsc", "类型检查没过：\n" + out + hint)
 
 
 check_log()
-check_js()
+check_ts()
 if errors:
     print(f"{len(errors)} 个问题：")
     for e in errors:
