@@ -7,7 +7,12 @@
 - **食物库**：按包装标签增改食物（每 100g / 每个 / 每份）
 - **设置**：用 Mifflin-St Jeor 公式算基础代谢和每日消耗，按热量缺口给出每日目标（男性不低于 1500 kcal）
 
-数据只保存在本机浏览器 localStorage，不上传任何地方；可在设置里导出 / 导入 JSON 备份。
+## 两种用法
+
+- **Claude 记账（默认）**：数据在 `data/log.json`。把吃了什么、体重、运动直接发给 Claude（文字或照片），Claude 用 `tools/log.py` 记进去并推送，网页（GitHub Pages）读取它做仪表盘，顶部显示 Claude 的点评。这时网页上的输入框都会隐藏。规则见 `CLAUDE.md`。
+- **手动记录**：直接打开本地 `index.html`（读不到 `data/log.json`）时，就是原来的手动模式，数据存在浏览器 localStorage，可导出 / 导入 JSON 备份。
+
+注意：仓库是公开的，`data/log.json` 里的饮食和体重别人也能看到。
 
 ## 使用
 

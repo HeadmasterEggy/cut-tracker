@@ -1,0 +1,266 @@
+{
+ "settings": {
+  "sex": "m",
+  "age": 23,
+  "height": 183,
+  "start": 90,
+  "goal": 85,
+  "act": 1.375,
+  "deficit": 700,
+  "protK": 1.8,
+  "goalDate": "2026-11-30"
+ },
+ "foods": [
+  {
+   "name": "鸡胸肉（熟）",
+   "per": 100,
+   "unit": "g",
+   "kcal": 165,
+   "protein": 31
+  },
+  {
+   "name": "牛肉（熟，带点肥）",
+   "per": 100,
+   "unit": "g",
+   "kcal": 220,
+   "protein": 27
+  },
+  {
+   "name": "米饭（熟）",
+   "per": 100,
+   "unit": "g",
+   "kcal": 130,
+   "protein": 2.7
+  },
+  {
+   "name": "西兰花",
+   "per": 100,
+   "unit": "g",
+   "kcal": 34,
+   "protein": 2.8
+  },
+  {
+   "name": "鸡蛋",
+   "per": 1,
+   "unit": "个",
+   "kcal": 70,
+   "protein": 6.3
+  },
+  {
+   "name": "全脂奶",
+   "per": 100,
+   "unit": "ml",
+   "kcal": 65,
+   "protein": 3.4
+  },
+  {
+   "name": "低脂奶",
+   "per": 100,
+   "unit": "ml",
+   "kcal": 45,
+   "protein": 3.6
+  },
+  {
+   "name": "Just Right 麦片",
+   "per": 100,
+   "unit": "g",
+   "kcal": 363,
+   "protein": 8.1
+  },
+  {
+   "name": "腰果 / 混合坚果",
+   "per": 100,
+   "unit": "g",
+   "kcal": 580,
+   "protein": 18
+  },
+  {
+   "name": "草莓",
+   "per": 100,
+   "unit": "g",
+   "kcal": 32,
+   "protein": 0.7
+  },
+  {
+   "name": "Lean Cuisine 鸡肉意面",
+   "per": 1,
+   "unit": "份",
+   "kcal": 340,
+   "protein": 20
+  },
+  {
+   "name": "无糖希腊酸奶",
+   "per": 100,
+   "unit": "g",
+   "kcal": 95,
+   "protein": 9
+  },
+  {
+   "name": "燕麦片（rolled oats）",
+   "per": 100,
+   "unit": "g",
+   "kcal": 375,
+   "protein": 12
+  },
+  {
+   "name": "Market Lane 果干坚果",
+   "per": 100,
+   "unit": "g",
+   "kcal": 499,
+   "protein": 8.2
+  },
+  {
+   "name": "GYG 牛腩 burrito（去芝士、糙米）",
+   "per": 1,
+   "unit": "份",
+   "kcal": 690,
+   "protein": 40
+  }
+ ],
+ "days": {
+  "2026-11-13": {
+   "foods": [
+    {
+     "name": "米饭（熟）",
+     "label": "米饭（熟） 200g",
+     "kcal": 260.0,
+     "protein": 5.4
+    },
+    {
+     "name": "鸡胸肉（熟）",
+     "label": "鸡胸肉（熟） 150g",
+     "kcal": 247.5,
+     "protein": 46.5
+    },
+    {
+     "name": "西兰花",
+     "label": "西兰花 150g",
+     "kcal": 51.0,
+     "protein": 4.2
+    },
+    {
+     "name": "牛肉（熟，带点肥）",
+     "label": "牛肉（熟，带点肥） 150g",
+     "kcal": 330.0,
+     "protein": 40.5
+    },
+    {
+     "name": "腰果 / 混合坚果",
+     "label": "腰果 / 混合坚果 20g",
+     "kcal": 116.0,
+     "protein": 3.6
+    },
+    {
+     "name": "草莓",
+     "label": "草莓 250g",
+     "kcal": 80.0,
+     "protein": 1.8
+    }
+   ],
+   "ex": []
+  },
+  "2026-11-14": {
+   "foods": [
+    {
+     "name": "Just Right 麦片",
+     "label": "Just Right 麦片 40g",
+     "kcal": 145.2,
+     "protein": 3.2
+    },
+    {
+     "name": "腰果 / 混合坚果",
+     "label": "腰果 / 混合坚果 10g",
+     "kcal": 58.0,
+     "protein": 1.8
+    },
+    {
+     "name": "全脂奶",
+     "label": "全脂奶 300ml",
+     "kcal": 195.0,
+     "protein": 10.2
+    },
+    {
+     "name": "鸡蛋",
+     "label": "鸡蛋 3个",
+     "kcal": 210.0,
+     "protein": 18.9
+    },
+    {
+     "name": "Lean Cuisine 鸡肉意面",
+     "label": "Lean Cuisine 鸡肉意面 1份",
+     "kcal": 340.0,
+     "protein": 20.0
+    },
+    {
+     "name": "牛肉（熟，带点肥）",
+     "label": "牛肉（熟，带点肥） 150g",
+     "kcal": 330.0,
+     "protein": 40.5
+    },
+    {
+     "name": "草莓",
+     "label": "草莓 250g",
+     "kcal": 80.0,
+     "protein": 1.8
+    },
+    {
+     "name": "牛肉（熟，带点肥）",
+     "label": "牛肉（熟，带点肥） 150g",
+     "kcal": 330.0,
+     "protein": 40.5
+    }
+   ],
+   "ex": [
+    {
+     "type": "快走",
+     "min": 53,
+     "kcal": 230
+    }
+   ]
+  },
+  "2026-11-15": {
+   "foods": [
+    {
+     "name": "全脂奶",
+     "label": "全脂奶 300ml",
+     "kcal": 195.0,
+     "protein": 10.2
+    },
+    {
+     "name": "Market Lane 果干坚果",
+     "label": "Market Lane 果干坚果 30g",
+     "kcal": 149.7,
+     "protein": 2.5
+    },
+    {
+     "name": "牛肉（熟，带点肥）",
+     "label": "牛肉（熟，带点肥） 200g",
+     "kcal": 440.0,
+     "protein": 54.0
+    },
+    {
+     "name": "午餐底下的蔬菜+酱汁+面（估）",
+     "label": "午餐底下的蔬菜+酱汁+面（估）",
+     "kcal": 325,
+     "protein": 15
+    },
+    {
+     "name": "GYG 牛腩 burrito（去芝士、糙米）",
+     "label": "GYG 牛腩 burrito（去芝士、糙米） 1份",
+     "kcal": 690.0,
+     "protein": 40.0
+    }
+   ],
+   "ex": []
+  }
+ },
+ "weights": {
+  "2026-11-14": 88.5,
+  "2026-11-15": 88.5
+ },
+ "setupDone": true,
+ "coach": {
+  "updated": "2026-11-15T17:45+11:00",
+  "text": "11-15 约 1800 kcal / 122g 蛋白，热量刚好，蛋白还差 30g 左右。\n明天：早餐把 3 个鸡蛋加回来，果干坚果换原味坚果 15–20g，晚饭肉给足 200g。\n体重看 7 天平均，单天 88.5 没变不用在意。\n\n11 月底到 85 kg：还剩 15 天要减 3.5 kg，约每周 1.6 kg，偏激进。前一两周会掉不少水分，有机会做到，但别为了赶时间吃到 1500 以下，蛋白质吃够、每天 1 万步比少吃更有用。"
+ }
+}

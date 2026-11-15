@@ -159,7 +159,7 @@
   nav button.bounce svg { animation: navBounce .5s var(--spring); }
 
   .tab { display: none; } .tab.on { display: block; }
-  .tab.on > .card { animation: cardIn .55s var(--ease) both; animation-delay: calc(var(--i, 0) * 50ms); }
+  .tab.on .card { animation: cardIn .55s var(--ease) both; animation-delay: calc(var(--i, 0) * 50ms); }
   .datebar { display: flex; align-items: center; gap: 8px; }
   .datebar button { width: 44px; }
   .datebar .d { flex: 1; text-align: center; font-weight: 600; }
@@ -229,18 +229,28 @@
   @keyframes confetti { 0% { opacity: 1; transform: translate(0, 0) rotate(0); } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); } }
 
   .d-only { display: none; }
+  .hero-kpis { display: none; }
+  /* 手机：分栏容器不参与布局，按 order 排成一列（顺序和原来一样） */
+  .cols, .col, .today-bar { display: contents; }
+  .tab.on { display: flex; flex-direction: column; }
+  .o1 { order: 1; } .o2 { order: 2; } .o3 { order: 3; } .o4 { order: 4; } .o5 { order: 5; }
+  .o6 { order: 6; } .o7 { order: 7; } .o8 { order: 8; } .o9 { order: 9; }
 
   /* ---------- 电脑端：侧边栏 + 仪表盘 ---------- */
   @media (min-width: 900px) {
     .d-only { display: initial; } .m-only { display: none; }
-    body { padding: 0 0 32px 232px; }
-    header { padding: 22px 32px 14px; }
+    body { padding: 0 0 40px 232px; }
+    header { padding: 22px 36px 14px; }
     header h1 { font-size: 24px; }
     .hdr-prog { width: 220px; height: 6px; }
-    main { max-width: 1280px; padding: 8px 32px; }
-    .card { padding: 18px 20px; margin-bottom: 0; transition: transform .3s var(--ease), box-shadow .3s, border-color .3s; }
+    main { max-width: 1240px; padding: 6px 36px; }
+    .card { padding: 20px 22px; margin-bottom: 0; transition: box-shadow .3s, border-color .3s; }
     .card:hover { border-color: rgba(255,255,255,.08); box-shadow: 0 12px 32px rgba(0,0,0,.28); }
-    .tab.on { display: grid; gap: 18px; align-items: start; }
+    .card h2 { font-size: 14px; letter-spacing: .3px; margin-bottom: 14px; }
+    .tab.on { gap: 20px; }
+    .tab.on .card { order: 0; }
+    .cols { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+    .col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
 
     nav {
       top: 0; bottom: 0; right: auto; width: 232px; flex-direction: column; gap: 4px;
@@ -257,7 +267,8 @@
     nav .ind { width: auto; height: auto; }
     nav .ind::before { top: 0; left: 0; width: 100%; height: 100%; margin: 0; border-radius: 12px; background: rgba(34,197,94,.14); box-shadow: inset 3px 0 0 var(--accent); }
     nav button.on svg { transform: scale(1.1); }
-    nav .side-foot { margin-top: auto; padding: 0 10px; }
+    nav .side-foot { display: block; margin-top: auto; padding: 0 10px; line-height: 1.7; }
+    nav .side-foot span { display: block; }
 
     .toast { bottom: 28px; left: calc(50% + 116px); }
 
@@ -268,40 +279,58 @@
     .list li:hover { background: rgba(255,255,255,.03); }
     .stat:hover { border-color: var(--line); }
 
-    /* 今天 */
-    #tab-today.on { grid-template-columns: 1.05fr 1.2fr 1fr; grid-template-areas: "date date date" "hero add ex" "hero list copy" "hero list ." ; }
-    #tab-today > :nth-child(1) { padding: 10px 14px; }
-    #tab-today > :nth-child(1) { grid-area: date; } #tab-today > :nth-child(2) { grid-area: hero; }
-    #tab-today > :nth-child(3) { grid-area: add; } #tab-today > :nth-child(4) { grid-area: list; }
-    #tab-today > :nth-child(5) { grid-area: ex; } #tab-today > :nth-child(6) { grid-area: copy; }
-    #tab-today .datebar { max-width: 460px; margin: 0 auto; }
-    .rings { flex-direction: column; align-items: center; gap: 22px; padding: 6px 0; }
-    .ring-wrap { width: 190px; }
-    .ring-center .big { font-size: 38px; }
-    #foodList, #wList, #libList { max-height: 520px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #334155 transparent; }
+    /* 今天：顶部工具条 → 横排总览 → 两栏 */
+    .today-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: -4px; }
+    .today-bar .card, .today-bar .card:hover { background: none; border: none; box-shadow: none; padding: 0; }
+    .date-card .datebar { gap: 4px; }
+    .date-card .datebar .d { flex: none; min-width: 180px; font-size: 16px; }
+    .date-card button { width: 36px; height: 36px; padding: 0; border-radius: 50%; }
+    .copy-card button { width: auto; padding: 8px 16px; font-size: 14px; }
+    #heroCard { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 32px; align-items: center; padding: 24px 28px; }
+    #heroCard .rings { gap: 28px; justify-content: flex-start; }
+    #heroCard .ring-col { flex: none; }
+    .ring-wrap { width: 164px; }
+    .ring-center .big { font-size: 34px; }
+    .hero-kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .hero-kpis .stat { padding: 14px 16px; }
+    .hero-kpis .stat b { font-size: 24px; margin-top: 2px; }
+    .hero-kpis .stat small { color: var(--muted); font-size: 12px; }
+    #dayHint { grid-column: 1 / -1; }
+    #dayHint:not(:empty) { margin-top: 0; }
+    #dayHint:empty { display: none; }
 
-    /* 体重 */
-    #tab-weight.on { grid-template-columns: 2fr 1fr; grid-template-areas: "stats stats" "chart rec" "chart hist"; }
-    #tab-weight > :nth-child(1) { grid-area: rec; } #tab-weight > :nth-child(2) { grid-area: chart; }
-    #tab-weight > :nth-child(3) { grid-area: stats; } #tab-weight > :nth-child(4) { grid-area: hist; }
-    #tab-weight #wStats { grid-template-columns: repeat(4, 1fr); }
-    #tab-weight #wStats b { font-size: 24px; }
-    #wList { max-height: 300px; }
+    /* 体重：统计一排 → 图 + 右侧记录/历史 */
+    .w-stats { padding: 14px; }
+    #wStats { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+    #wStats .stat b { font-size: 22px; }
+    #wList { max-height: 340px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #334155 transparent; }
 
     /* 食物库 */
-    #tab-foods.on { grid-template-columns: 1.6fr 1fr; }
-    #tab-foods > :nth-child(2) { position: sticky; top: 80px; }
-    #libList { columns: 2; column-gap: 24px; max-height: none; }
+    body:not(.agent) #tab-foods.on { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+    #tab-foods > .card:nth-child(2) { position: sticky; top: 84px; }
+    #libList { columns: 2; column-gap: 28px; }
+    body.agent #libList { columns: 3; }
     #libList li { break-inside: avoid; }
 
     /* 设置 */
-    #tab-settings.on { grid-template-columns: 1.4fr 1fr; grid-template-areas: "body calc" "body data"; }
+    #tab-settings.on { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); grid-template-areas: "body calc" "body data"; gap: 20px; align-items: start; }
     #tab-settings > :nth-child(1) { grid-area: body; } #tab-settings > :nth-child(2) { grid-area: calc; } #tab-settings > :nth-child(3) { grid-area: data; }
   }
-  @media (min-width: 900px) and (max-width: 1180px) {
-    #tab-today.on { grid-template-columns: 1fr 1.3fr; grid-template-areas: "date date" "hero add" "hero list" "ex list" "copy list"; }
-    #libList, #wList { columns: 1; }
+  @media (min-width: 900px) and (max-width: 1040px) {
+    #heroCard { grid-template-columns: 1fr; gap: 20px; }
   }
+  @media (min-width: 900px) and (max-width: 1240px) {
+    .ring-wrap { width: 148px; }
+    .cols { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    #libList, body.agent #libList { columns: 1; }
+  }
+
+  /* 仪表盘模式：数据来自 data/log.json，由 Claude 记账，网页只读 */
+  .agent-only { display: none; }
+  body.agent .agent-only { display: block; }
+  body.agent .manual, body.agent button.del { display: none; }
+  body.agent #tab-settings input, body.agent #tab-settings select { pointer-events: none; opacity: .7; }
+  .coach { white-space: pre-line; }
 
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; animation-delay: 0s !important; transition-duration: .01ms !important; }
@@ -320,15 +349,19 @@
 <main>
   <!-- 今天 -->
   <section class="tab on" id="tab-today">
-    <div class="card">
+    <div class="today-bar">
+    <div class="card o2 date-card">
       <div class="datebar">
         <button class="ghost" id="prevDay">‹</button>
         <div class="d" id="dateLabel"></div>
         <button class="ghost" id="nextDay">›</button>
       </div>
     </div>
-
-    <div class="card" id="heroCard">
+    <div class="card o9 copy-card manual">
+      <button class="ghost" id="copyDay">复制今天的汇总（发给 AI 或自己看）</button>
+    </div>
+    </div>
+    <div class="card o3" id="heroCard">
       <div class="rings">
         <div class="ring-col">
           <div class="ring-wrap" id="kcalWrap">
@@ -345,10 +378,17 @@
           <div class="muted" id="proteinLine"></div>
         </div>
       </div>
+      <div class="hero-kpis" id="heroKpis"></div>
       <div class="muted" id="dayHint"></div>
     </div>
-
-    <div class="card">
+    <div class="cols">
+      <div class="col col-main">
+    <div class="card o1 agent-only" id="coachCard">
+      <h2>Claude 的点评</h2>
+      <div class="coach" id="coachText"></div>
+      <div class="muted" id="coachTime" style="margin-top:6px"></div>
+    </div>
+    <div class="card o5 manual">
       <h2>添加食物</h2>
       <div class="chips" id="foodChips"></div>
       <div class="row">
@@ -367,16 +407,20 @@
         <button class="ghost" id="addCustom" style="margin-top:8px">加到今天</button>
       </details>
     </div>
-
-    <div class="card">
+    <div class="card o6">
       <h2>今天吃了</h2>
       <ul class="list" id="foodList"></ul>
     </div>
-
-    <div class="card">
+      </div>
+      <div class="col col-side">
+    <div class="card o4 agent-only">
+      <h2>最近 7 天</h2>
+      <div class="grid2" id="weekStats"></div>
+    </div>
+    <div class="card o7">
       <h2>今天运动</h2>
       <ul class="list" id="exList"></ul>
-      <div class="row" style="margin-top:8px">
+      <div class="row manual" style="margin-top:8px">
         <select id="exType">
           <option>快走</option><option>力量训练</option><option>骑车</option>
           <option>跑步</option><option>跑外卖</option><option>其他</option>
@@ -384,18 +428,27 @@
         <input id="exMin" type="number" inputmode="numeric" placeholder="分钟" style="max-width:90px">
         <input id="exKcal" type="number" inputmode="numeric" placeholder="kcal(可选)" style="max-width:110px">
       </div>
-      <button class="ghost" id="addEx" style="margin-top:8px">记录运动</button>
-      <div class="muted" style="margin-top:6px">运动消耗只做记录，不加回可吃热量（目标里已经算了日常活动，手表也常常算高）。</div>
+      <button class="ghost manual" id="addEx" style="margin-top:8px">记录运动</button>
+      <div class="muted manual" style="margin-top:6px">运动消耗只做记录，不加回可吃热量（目标里已经算了日常活动，手表也常常算高）。</div>
     </div>
-
-    <div class="card">
-      <button class="ghost" id="copyDay">复制今天的汇总（发给 AI 或自己看）</button>
+      </div>
     </div>
   </section>
 
   <!-- 体重 -->
   <section class="tab" id="tab-weight">
-    <div class="card">
+    <div class="card o3 w-stats">
+      <div class="grid2" id="wStats"></div>
+    </div>
+    <div class="cols">
+      <div class="col col-main">
+    <div class="card o2">
+      <h2>趋势（点 = 每天，线 = 7 天平均）</h2>
+      <div id="wChart"></div>
+    </div>
+      </div>
+      <div class="col col-side">
+    <div class="card o1 manual">
       <h2>记录体重（早上空腹、上完厕所后称）</h2>
       <div class="row">
         <input id="wDate" type="date">
@@ -403,16 +456,11 @@
       </div>
       <button id="addW" style="margin-top:8px">保存</button>
     </div>
-    <div class="card">
-      <h2>趋势（点 = 每天，线 = 7 天平均）</h2>
-      <div id="wChart"></div>
-    </div>
-    <div class="card">
-      <div class="grid2" id="wStats"></div>
-    </div>
-    <div class="card">
+    <div class="card o4">
       <h2>历史</h2>
       <ul class="list" id="wList"></ul>
+    </div>
+      </div>
     </div>
   </section>
 
@@ -422,7 +470,7 @@
       <h2>食物库（按标签或估算填写）</h2>
       <ul class="list" id="libList"></ul>
     </div>
-    <div class="card">
+    <div class="card manual">
       <h2>新增 / 修改食物</h2>
       <label>名称（同名会覆盖）</label>
       <input id="lName" placeholder="如：鸡胸肉（熟）">
@@ -464,14 +512,15 @@
         <div><label>每日热量缺口 kcal</label><input id="sDef" type="number" inputmode="numeric"></div>
         <div><label>蛋白质 g/kg 体重</label><input id="sProtK" type="number" inputmode="decimal" step="0.1"></div>
       </div>
-      <button id="saveSet" style="margin-top:12px">保存设置</button>
+      <button class="manual" id="saveSet" style="margin-top:12px">保存设置</button>
+      <div class="muted agent-only" style="margin-top:8px">想改目标直接跟 Claude 说。</div>
     </div>
     <div class="card">
       <h2>计算结果</h2>
       <div class="grid2" id="calcBox"></div>
       <div class="muted" id="calcNote" style="margin-top:8px"></div>
     </div>
-    <div class="card">
+    <div class="card manual">
       <h2>数据</h2>
       <div class="muted" style="margin-bottom:8px">数据只存在这台设备的浏览器里，换手机或清缓存前记得导出。</div>
       <div class="row">
@@ -492,7 +541,7 @@
   <button data-tab="weight"><svg viewBox="0 0 24 24"><path d="M4 18l5-6 4 3 7-9"/><path d="M15 6h5v5"/></svg>体重</button>
   <button data-tab="foods"><svg viewBox="0 0 24 24"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/></svg>食物库</button>
   <button data-tab="settings"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>设置</button>
-  <div class="side-foot muted">数据只存在本机浏览器<br>← → 键切换日期</div>
+  <div class="side-foot muted"><span class="manual">数据只存在本机浏览器</span><span class="agent-only">数据由 Claude 记账</span>← → 键切换日期</div>
 </nav>
 <div class="toast" id="toast"></div>
 
@@ -695,6 +744,14 @@ function renderToday() {
   else if (t.kcal > 0 && t.protein < p.protein * 0.6 && t.kcal > p.target * 0.6) hint = '蛋白质偏少，剩下的热量优先给肉、蛋、奶。';
   else if (left < 0) hint = '今天超了一点，没关系，明天正常吃，别饿回来。';
   $('dayHint').textContent = hint;
+  // 电脑端总览里的几个数
+  const wToday = S.weights[curDate], gl0 = Number(S.settings.goal);
+  $('heroKpis').innerHTML = `
+    <div class="stat"><span class="muted">已吃</span><b>${numSpan(r0(t.kcal))} <small>/ ${r0(p.target)} kcal</small></b></div>
+    <div class="stat"><span class="muted">蛋白还差</span><b>${numSpan(Math.max(0, r0(p.protein - t.protein)), 0, ' g')}</b></div>
+    <div class="stat"><span class="muted">运动</span><b>${numSpan(t.exMin)} <small>分钟${t.exKcal ? ` · ${r0(t.exKcal)} kcal` : ''}</small></b></div>
+    <div class="stat"><span class="muted">${wToday ? '当天体重' : '最近体重'}</span><b>${numSpan(r1(wToday || p.w), 1)} <small>kg · 离目标 ${r1(Math.max(0, (wToday || p.w) - gl0))}</small></b></div>`;
+  animateNums($('heroKpis'));
 
   $('foodList').innerHTML = d.foods.length ? d.foods.map((f, i) => `
     <li><span class="name">${esc(f.label || f.name)}</span>
@@ -710,6 +767,7 @@ function renderToday() {
   applyFlash('foodList'); applyFlash('exList');
 
   renderFoodPicker();
+  renderAgent();
   $('hdrWeight').textContent = S.setupDone ? `${r1(p.w)} kg → ${S.settings.goal} kg` : '先在设置里填身体数据';
   const st = Number(S.settings.start), gl = Number(S.settings.goal);
   $('hdrProg').style.width = (S.setupDone && st > gl ? Math.max(0, Math.min(1, (st - p.w) / (st - gl))) * 100 : 0) + '%';
@@ -850,6 +908,38 @@ $('copyDay').onclick = async () => {
   catch (e) { prompt('复制下面的内容：', text); }
 };
 
+// ---------- 仪表盘（Claude 记账） ----------
+let agentMode = false;
+function renderAgent() {
+  if (!agentMode) return;
+  const c = S.coach || {};
+  $('coachText').textContent = c.text || '还没有点评';
+  $('coachTime').textContent = c.updated ? '更新于 ' + c.updated.replace('T', ' ').slice(0, 16) : '';
+  const p = plan(), end = today();
+  const ks = [...Array(7)].map((_, i) => shift(end, -i)).filter(k => S.days[k] && S.days[k].foods.length);
+  const avg = f => ks.length ? ks.reduce((a, k) => a + f(totals(k)), 0) / ks.length : 0;
+  const hit = ks.filter(k => { const t = totals(k); return t.kcal >= p.floor && t.kcal <= p.target + 100; }).length;
+  const exMin = [...Array(7)].map((_, i) => totals(shift(end, -i)).exMin).reduce((a, b) => a + b, 0);
+  $('weekStats').innerHTML = `
+    <div class="stat"><span class="muted">平均热量</span><b>${ks.length ? r0(avg(t => t.kcal)) : '—'}</b></div>
+    <div class="stat"><span class="muted">平均蛋白</span><b>${ks.length ? r0(avg(t => t.protein)) + ' g' : '—'}</b></div>
+    <div class="stat"><span class="muted">热量达标天数</span><b>${hit} / ${ks.length}</b></div>
+    <div class="stat"><span class="muted">运动</span><b>${exMin} 分钟</b></div>`;
+}
+// 部署在 GitHub Pages 上时读 data/log.json；直接打开本地文件读不到，就还是手动模式
+async function loadRemote() {
+  try {
+    const res = await fetch('data/log.json?t=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) return false;
+    const data = await res.json();
+    if (!data.settings || !data.days) return false;
+    S = Object.assign(clone(DEFAULT_STATE), data);
+    agentMode = true; document.body.classList.add('agent');
+    save(); renderAll();
+    return true;
+  } catch (e) { return false; }
+}
+
 // ---------- 体重 ----------
 function weightSeries() {
   const keys = Object.keys(S.weights).sort();
@@ -920,12 +1010,25 @@ function renderWeight() {
     <div class="stat"><span class="muted">7 天平均</span><b>${last ? numSpan(r1(last.avg), 1) : '—'} kg</b></div>
     <div class="stat"><span class="muted">比起始</span><b class="${last && last.avg < start ? 'ok' : ''}">${last ? numSpan(r1(last.avg - start), 1) : '—'} kg</b></div>
     <div class="stat"><span class="muted">最近每周</span><b>${rate === null ? '—' : numSpan(r1(rate), 1, ' kg')}</b></div>
-    <div class="stat"><span class="muted">按这个速度到 ${goal}kg</span><b style="font-size:16px">${eta}</b></div>`;
+    <div class="stat"><span class="muted">按这个速度到 ${goal}kg</span><b style="font-size:16px">${eta}</b></div>` + deadlineStats(last, rate, goal);
   animateNums($('wStats'));
   $('wList').innerHTML = ser.slice().reverse().slice(0, 60).map(s =>
     `<li><span class="name">${s.date}</span><span class="num">${s.w} kg <span class="muted">均 ${r1(s.avg)}</span></span>
      <button class="del" data-w="${s.date}" aria-label="删除">×</button></li>`).join('') || '<li class="muted empty">还没记录</li>';
   applyFlash('wList');
+}
+// 截止日期：离目标日期还剩几天、每周需要减多少、现在的速度够不够
+function deadlineStats(last, rate, goal) {
+  const gd = S.settings.goalDate; if (!gd) return '';
+  const from = last ? last.date : today(), cur = last ? last.avg : Number(S.settings.start);
+  const days = Math.round((new Date(gd) - new Date(from)) / 864e5);
+  if (days <= 0) return `<div class="stat"><span class="muted">目标日期 ${gd}</span><b style="font-size:16px">已到期</b></div>`;
+  const need = (cur - goal) / days * 7;
+  if (need <= 0) return `<div class="stat"><span class="muted">目标日期 ${gd}</span><b class="ok" style="font-size:16px">已达到</b></div>`;
+  const on = rate !== null && -rate >= need * 0.9;
+  return `
+    <div class="stat"><span class="muted">离 ${gd.slice(5)} 还剩 ${days} 天，每周需减</span><b class="${need > 1 ? 'warn' : ''}">${r1(need)} kg</b></div>
+    <div class="stat"><span class="muted">按现在速度</span><b class="${rate === null ? '' : on ? 'ok' : 'warn'}" style="font-size:16px">${rate === null ? '数据还不够' : on ? '赶得上' : '会慢一点'}</b></div>`;
 }
 $('addW').onclick = () => {
   const d = $('wDate').value, v = Number($('wVal').value);
@@ -1070,7 +1173,7 @@ addEventListener('keydown', e => {
   if (!$('tab-today').classList.contains('on') || e.target.closest('input, select, textarea')) return;
   if (e.key === 'ArrowLeft') goDay(-1); else if (e.key === 'ArrowRight') goDay(1);
 });
-document.querySelectorAll('.tab').forEach(t => [...t.children].forEach((c, i) => c.style.setProperty('--i', i)));
+document.querySelectorAll('.tab').forEach(t => t.querySelectorAll('.card').forEach((c, i) => c.style.setProperty('--i', i)));
 document.querySelector('nav').onclick = e => {
   const b = e.target.closest('[data-tab]'); if (!b) return;
   const t = b.dataset.tab;
@@ -1087,10 +1190,14 @@ document.querySelector('nav').onclick = e => {
 function renderAll() { renderToday(); renderWeight(); renderLib(); renderSettings(); }
 
 renderAll(); moveInd();
-if (!S.setupDone) {
-  document.querySelector('nav button[data-tab="settings"]').click();
-  toast('先填一下身体数据');
-}
+loadRemote().then(ok => {
+  if (!ok && !S.setupDone) {
+    document.querySelector('nav button[data-tab="settings"]').click();
+    toast('先填一下身体数据');
+  }
+});
+// 回到页面时刷新一下，拿到 Claude 刚记的
+document.addEventListener('visibilitychange', () => { if (!document.hidden && agentMode) loadRemote(); });
 </script>
 </body>
 </html>
