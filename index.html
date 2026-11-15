@@ -401,7 +401,9 @@
       <div class="row">
         <button class="ghost" id="exportBtn">导出备份</button>
         <button class="ghost" id="importBtn">导入备份</button>
+        <button class="ghost" id="mergeBtn">合并导入</button>
       </div>
+      <div class="muted" style="margin-top:8px">导入备份会覆盖全部数据；合并导入只补上这里没有的日期、食物、运动和体重，已有的记录和设置不动。</div>
       <input type="file" id="importFile" accept="application/json" style="display:none">
     </div>
   </section>
@@ -942,12 +944,36 @@ $('exportBtn').onclick = () => {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob); a.download = `cut-tracker-${today()}.json`; a.click();
 };
-$('importBtn').onclick = () => $('importFile').click();
+let importMode = 'replace';
+$('importBtn').onclick = () => { importMode = 'replace'; $('importFile').click(); };
+$('mergeBtn').onclick = () => { importMode = 'merge'; $('importFile').click(); };
+// 合并：同一天里同样的记录按条数补齐（同一天吃两次牛肉也能保留两条）
+function mergeList(cur, add, key) {
+  const left = {};
+  cur.forEach(x => { const k = key(x); left[k] = (left[k] || 0) + 1; });
+  let n = 0;
+  add.forEach(x => { const k = key(x); if (left[k] > 0) left[k]--; else { cur.push(x); n++; } });
+  return n;
+}
+function mergeData(data) {
+  let nf = 0, nl = 0, nw = 0;
+  if (!S.setupDone && data.setupDone) { S.settings = data.settings; S.setupDone = true; }
+  (data.foods || []).forEach(f => { if (!S.foods.some(x => x.name === f.name)) { S.foods.push(f); nl++; } });
+  Object.keys(data.days || {}).forEach(ds => {
+    const src = data.days[ds], d = day(ds);
+    nf += mergeList(d.foods, src.foods || [], f => `${f.label || f.name}|${f.kcal}|${f.protein}`);
+    nf += mergeList(d.ex, src.ex || [], e => `${e.type}|${e.min}|${e.kcal}`);
+  });
+  Object.keys(data.weights || {}).forEach(ds => { if (S.weights[ds] == null) { S.weights[ds] = data.weights[ds]; nw++; } });
+  return `已合并：${nf} 条记录、${nl} 种食物、${nw} 个体重`;
+}
 $('importFile').onchange = async e => {
   const file = e.target.files[0]; if (!file) return;
   try {
     const data = JSON.parse(await file.text());
+    e.target.value = '';  // 同一个文件可以再选一次
     if (!data.settings || !data.days) throw new Error();
+    if (importMode === 'merge') { const msg = mergeData(data); save(); renderAll(); toast(msg); return; }
     if (!confirm('导入会覆盖当前数据，继续？')) return;
     S = Object.assign(clone(DEFAULT_STATE), data); save(); renderAll(); toast('已导入');
   } catch (err) { toast('文件格式不对'); }
