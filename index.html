@@ -11,64 +11,234 @@
   :root {
     --bg: #0f172a; --card: #1e293b; --line: #334155; --text: #e2e8f0; --muted: #94a3b8;
     --accent: #22c55e; --warn: #f59e0b; --bad: #ef4444; --blue: #38bdf8;
+    --ease: cubic-bezier(.22, 1, .36, 1); --spring: cubic-bezier(.34, 1.56, .64, 1);
   }
-  * { box-sizing: border-box; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   body {
     margin: 0; background: var(--bg); color: var(--text);
     font: 15px/1.5 -apple-system, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
-    padding: env(safe-area-inset-top) 0 calc(72px + env(safe-area-inset-bottom));
+    padding: 0 0 calc(72px + env(safe-area-inset-bottom));
   }
-  header { padding: 14px 16px 4px; display: flex; align-items: center; justify-content: space-between; }
-  header h1 { font-size: 20px; margin: 0; }
+  body::before {
+    content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background: radial-gradient(900px 420px at 15% -120px, rgba(34,197,94,.13), transparent 70%),
+                radial-gradient(700px 380px at 100% 0, rgba(56,189,248,.10), transparent 70%);
+  }
+  header {
+    position: sticky; top: 0; z-index: 10; padding: calc(14px + env(safe-area-inset-top)) 16px 10px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(15,23,42,.72); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+    transition: box-shadow .3s;
+  }
+  header.scrolled { box-shadow: 0 1px 0 var(--line), 0 10px 30px rgba(0,0,0,.3); }
+  header h1 { font-size: 20px; margin: 0; letter-spacing: .5px; }
+  .hdr-r { text-align: right; }
+  .hdr-prog { width: 120px; height: 4px; border-radius: 4px; background: #0b1222; overflow: hidden; margin: 4px 0 0 auto; }
+  .hdr-prog > div { height: 100%; width: 0; border-radius: 4px; background: linear-gradient(90deg, var(--accent), var(--blue)); transition: width 1.2s var(--ease); }
   main { padding: 8px 12px; max-width: 640px; margin: 0 auto; }
-  .card { background: var(--card); border-radius: 14px; padding: 14px; margin-bottom: 12px; }
+  .card {
+    background: linear-gradient(180deg, rgba(255,255,255,.025), transparent 60%), var(--card);
+    border: 1px solid rgba(255,255,255,.04); border-radius: 16px; padding: 14px; margin-bottom: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,.18);
+  }
+  .card.pulse { animation: cardPulse .9s var(--ease); }
   .card h2 { font-size: 15px; margin: 0 0 10px; color: var(--muted); font-weight: 600; }
   .row { display: flex; gap: 8px; align-items: center; }
   .row > * { flex: 1; min-width: 0; }
-  .big { font-size: 34px; font-weight: 700; line-height: 1.1; }
+  .big { font-size: 34px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; transition: color .4s; }
   .muted { color: var(--muted); font-size: 13px; }
   .ok { color: var(--accent); } .warn { color: var(--warn); } .bad { color: var(--bad); }
   input, select, button {
     font: inherit; color: var(--text); background: #0b1222; border: 1px solid var(--line);
     border-radius: 10px; padding: 10px; width: 100%;
   }
-  button { background: var(--accent); color: #052e13; border: none; font-weight: 600; cursor: pointer; }
+  input, select { transition: border-color .2s, box-shadow .25s, background .2s; }
+  input:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(34,197,94,.18); background: #0d1628; }
+  input.shake, select.shake { animation: shake .4s; border-color: var(--bad); box-shadow: 0 0 0 3px rgba(239,68,68,.2); }
+  button {
+    background: var(--accent); color: #052e13; border: none; font-weight: 600; cursor: pointer;
+    position: relative; overflow: hidden; user-select: none; -webkit-user-select: none;
+    transition: transform .18s var(--ease), background .25s, box-shadow .25s, filter .2s, color .2s;
+  }
+  button:not(.ghost):not(.del) { box-shadow: 0 4px 14px rgba(34,197,94,.22); }
+  button:active { transform: scale(.96); }
   button.ghost { background: transparent; color: var(--text); border: 1px solid var(--line); }
+  button.ghost:active { background: rgba(255,255,255,.04); }
   button.small { padding: 6px 10px; width: auto; font-size: 13px; }
-  button.del { background: transparent; color: var(--muted); border: none; width: auto; padding: 4px 8px; font-size: 18px; }
+  button.del {
+    background: transparent; color: var(--muted); border: none; width: 32px; height: 32px; padding: 0; font-size: 18px;
+    border-radius: 50%; flex: 0 0 auto; transition: color .2s, background .2s, transform .3s var(--spring);
+  }
+  button.del:hover, button.del:active { color: var(--bad); background: rgba(239,68,68,.12); transform: rotate(90deg); }
+  button.done-flash { background: #16a34a; animation: pop .45s var(--spring); }
+  .ripple {
+    position: absolute; border-radius: 50%; background: currentColor; opacity: .28; pointer-events: none;
+    transform: scale(0); animation: ripple .6s ease-out forwards;
+  }
   label { display: block; font-size: 13px; color: var(--muted); margin: 8px 0 4px; }
+
+  /* 进度环 */
+  .rings { display: flex; justify-content: space-around; align-items: flex-start; gap: 8px; }
+  .ring-col { text-align: center; flex: 1; min-width: 0; }
+  .ring-wrap { position: relative; width: min(148px, 40vw); aspect-ratio: 1; margin: 0 auto 6px; cursor: pointer; }
+  .ring { width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
+  .ring circle { fill: none; stroke-width: 11; stroke-linecap: round; }
+  .ring .bg { stroke: #0b1222; }
+  .ring .fg {
+    stroke: var(--accent); stroke-dasharray: 326.73; stroke-dashoffset: 326.73;
+    transition: stroke-dashoffset 1.1s var(--ease), stroke .5s;
+  }
+  .ring-wrap.done .fg { animation: ringGlow 2s ease-in-out infinite; }
+  .ring-wrap.over { animation: shakeX .5s; }
+  .ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
+  .ring-center .big { font-size: 30px; }
+  .ring-center .muted { font-size: 12px; }
+  .floaty {
+    position: absolute; left: 50%; top: -6px; font-weight: 700; font-size: 15px; z-index: 2; pointer-events: none; white-space: nowrap;
+    animation: floatUp 1.1s var(--ease) forwards; text-shadow: 0 2px 8px rgba(0,0,0,.5);
+  }
+  #dayHint:not(:empty) { margin-top: 10px; padding: 8px 10px; border-radius: 10px; background: rgba(245,158,11,.1); color: #fcd34d; animation: fadeDown .4s var(--ease); }
+
   .bar { height: 10px; background: #0b1222; border-radius: 6px; overflow: hidden; margin: 6px 0 2px; }
-  .bar > div { height: 100%; background: var(--accent); transition: width .3s; }
+  .bar > div { height: 100%; background: var(--accent); transition: width .6s var(--ease); }
+
+  /* 列表 */
   .list { list-style: none; margin: 0; padding: 0; }
-  .list li { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .list li {
+    display: flex; align-items: center; gap: 8px; padding: 8px 4px; border-bottom: 1px solid var(--line);
+    border-radius: 8px; transform-origin: center top;
+  }
   .list li:last-child { border-bottom: none; }
   .list .name { flex: 1; min-width: 0; }
   .list .num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .list li.enter { animation: liIn .7s var(--spring) both; }
+  .list.stagger li { animation: liFade .4s var(--ease) both; animation-delay: calc(var(--i, 0) * 35ms); }
+  .list li.leaving {
+    height: 0 !important; padding-top: 0; padding-bottom: 0; opacity: 0; transform: translateX(36px);
+    border-bottom-color: transparent; overflow: hidden;
+    transition: height .3s var(--ease), padding .3s var(--ease), opacity .22s, transform .3s var(--ease);
+  }
+  .list li.empty { justify-content: center; padding: 14px 0; animation: liFade .4s var(--ease) both; }
+  [data-edit] { transition: color .2s; }
+  [data-edit]:active { color: var(--accent); }
+
   .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
-  .chip { background: #0b1222; border: 1px solid var(--line); border-radius: 999px; padding: 5px 10px; font-size: 13px; cursor: pointer; }
-  .chip.on { border-color: var(--accent); color: var(--accent); }
+  .chip {
+    background: #0b1222; border: 1px solid var(--line); border-radius: 999px; padding: 5px 10px; font-size: 13px; cursor: pointer;
+    transition: transform .25s var(--spring), border-color .2s, color .2s, background .2s; user-select: none; -webkit-user-select: none;
+  }
+  .chip:active { transform: scale(.92); }
+  .chip.on { border-color: var(--accent); color: var(--accent); background: rgba(34,197,94,.1); animation: pop .4s var(--spring); }
+
+  details summary { list-style: none; cursor: pointer; user-select: none; -webkit-user-select: none; }
+  details summary::-webkit-details-marker { display: none; }
+  details summary::before { content: '▸'; display: inline-block; margin-right: 6px; transition: transform .3s var(--ease); }
+  details[open] summary::before { transform: rotate(90deg); }
+  details[open] > :not(summary) { animation: fadeDown .35s var(--ease) both; }
+
+  /* 底部导航 */
   nav {
-    position: fixed; bottom: 0; left: 0; right: 0; display: flex; background: #0b1222;
+    position: fixed; bottom: 0; left: 0; right: 0; display: flex; z-index: 10;
+    background: rgba(11,18,34,.86); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
     border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom);
   }
-  nav button { background: none; color: var(--muted); border-radius: 0; padding: 12px 0; font-weight: 500; }
+  nav .ind { position: absolute; top: 0; left: 0; width: 25%; height: 52px; pointer-events: none; transition: transform .5s var(--spring); }
+  nav .ind::before {
+    content: ''; position: absolute; top: 5px; left: 50%; width: 52px; height: 28px; margin-left: -26px;
+    border-radius: 999px; background: rgba(34,197,94,.16);
+  }
+  nav button {
+    background: none; color: var(--muted); border-radius: 0; padding: 7px 0 6px; font-weight: 500; font-size: 11px;
+    display: flex; flex-direction: column; align-items: center; gap: 3px; z-index: 1; box-shadow: none !important;
+  }
+  nav button:active { transform: none; }
+  nav svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: transform .45s var(--spring); }
   nav button.on { color: var(--accent); }
+  nav button.on svg { transform: translateY(-1px) scale(1.12); }
+  nav button.bounce svg { animation: navBounce .5s var(--spring); }
+
   .tab { display: none; } .tab.on { display: block; }
+  .tab.on > .card { animation: cardIn .55s var(--ease) both; animation-delay: calc(var(--i, 0) * 50ms); }
   .datebar { display: flex; align-items: center; gap: 8px; }
   .datebar button { width: 44px; }
   .datebar .d { flex: 1; text-align: center; font-weight: 600; }
+  .datebar .d.slide-l { animation: slideL .35s var(--ease); }
+  .datebar .d.slide-r { animation: slideR .35s var(--ease); }
+  .datebar button:disabled { opacity: .3; }
+
+  /* 体重图 */
+  #wChart { position: relative; touch-action: pan-y; }
   svg text { fill: var(--muted); font-size: 11px; }
+  .trend { stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 1.4s var(--ease) .15s forwards; }
+  .area { opacity: 0; animation: fadeIn .8s ease .8s forwards; }
+  .dot { transform-box: fill-box; transform-origin: center; animation: dotIn .45s var(--spring) both; }
+  .goal-line { stroke-dasharray: 4 4; animation: dash 20s linear infinite; }
+  .cursor { opacity: 0; transition: opacity .15s; pointer-events: none; }
+  .cursor.on { opacity: 1; }
+  .tip {
+    position: absolute; top: 0; transform: translate(-50%, -6px); background: #0b1222; border: 1px solid var(--line);
+    border-radius: 8px; padding: 4px 8px; font-size: 12px; white-space: nowrap; pointer-events: none;
+    opacity: 0; transition: opacity .15s; box-shadow: 0 6px 16px rgba(0,0,0,.35);
+  }
+  .tip.on { opacity: 1; }
+
   .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .stat { background: #0b1222; border-radius: 10px; padding: 10px; }
-  .stat b { display: block; font-size: 20px; }
-  .toast { position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%); background: #334155; padding: 8px 14px; border-radius: 10px; font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none; }
-  .toast.on { opacity: 1; }
+  .stat { background: #0b1222; border-radius: 12px; padding: 10px; border: 1px solid transparent; transition: border-color .3s, transform .3s var(--spring); }
+  .stat:active { transform: scale(.97); border-color: var(--line); }
+  .stat b { display: block; font-size: 20px; font-variant-numeric: tabular-nums; }
+  .tab.on .stat { animation: cardIn .5s var(--ease) both; }
+  .tab.on .stat:nth-child(2) { animation-delay: .06s; } .tab.on .stat:nth-child(3) { animation-delay: .12s; } .tab.on .stat:nth-child(4) { animation-delay: .18s; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: calc(84px + env(safe-area-inset-bottom)); z-index: 20;
+    transform: translate(-50%, 18px) scale(.94); background: rgba(51,65,85,.95);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    padding: 9px 14px; border-radius: 12px; font-size: 14px; opacity: 0; pointer-events: none;
+    display: flex; align-items: center; gap: 12px; max-width: calc(100vw - 32px); box-shadow: 0 10px 30px rgba(0,0,0,.4);
+    transition: opacity .25s, transform .4s var(--spring);
+  }
+  .toast.on { opacity: 1; transform: translate(-50%, 0) scale(1); pointer-events: auto; }
+  .toast span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .toast button { width: auto; flex: 0 0 auto; white-space: nowrap; padding: 2px 8px; background: none; color: var(--accent); font-weight: 700; box-shadow: none !important; }
+
+  .confetti { position: fixed; z-index: 30; width: 8px; height: 8px; border-radius: 2px; pointer-events: none; animation: confetti 1s cubic-bezier(.2,.7,.4,1) forwards; }
+
+  @keyframes cardIn { from { opacity: 0; transform: translateY(16px) scale(.98); } }
+  @keyframes cardPulse { 0% { box-shadow: 0 0 0 0 rgba(34,197,94,.5); } 100% { box-shadow: 0 0 0 14px rgba(34,197,94,0); } }
+  @keyframes fadeIn { to { opacity: 1; } }
+  @keyframes fadeDown { from { opacity: 0; transform: translateY(-6px); } }
+  @keyframes liIn {
+    0% { opacity: 0; transform: translateY(-10px) scale(.96); background: rgba(34,197,94,.22); }
+    40% { opacity: 1; transform: none; }
+    100% { background: transparent; }
+  }
+  @keyframes liFade { from { opacity: 0; transform: translateY(6px); } }
+  @keyframes pop { 0% { transform: scale(1); } 40% { transform: scale(1.08); } 100% { transform: scale(1); } }
+  @keyframes ripple { to { transform: scale(2.6); opacity: 0; } }
+  @keyframes shake { 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
+  @keyframes shakeX { 20%, 60% { transform: rotate(-3deg); } 40%, 80% { transform: rotate(3deg); } }
+  @keyframes floatUp { 0% { opacity: 0; transform: translate(-50%, 14px) scale(.7); } 25% { opacity: 1; transform: translate(-50%, 0) scale(1.1); } 100% { opacity: 0; transform: translate(-50%, -28px) scale(1); } }
+  @keyframes ringGlow { 0%, 100% { filter: drop-shadow(0 0 2px rgba(56,189,248,.4)); } 50% { filter: drop-shadow(0 0 9px rgba(56,189,248,.9)); } }
+  @keyframes navBounce { 0% { transform: scale(1); } 35% { transform: translateY(-4px) scale(1.22); } 100% { transform: translateY(-1px) scale(1.12); } }
+  @keyframes slideL { from { opacity: 0; transform: translateX(-24px); } }
+  @keyframes slideR { from { opacity: 0; transform: translateX(24px); } }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  @keyframes dotIn { from { opacity: 0; transform: scale(0); } }
+  @keyframes dash { to { stroke-dashoffset: -200; } }
+  @keyframes confetti { 0% { opacity: 1; transform: translate(0, 0) rotate(0); } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; animation-delay: 0s !important; transition-duration: .01ms !important; }
+  }
 </style>
 </head>
 <body>
 <header>
   <h1>减脂记录</h1>
-  <span class="muted" id="hdrWeight"></span>
+  <div class="hdr-r">
+    <span class="muted" id="hdrWeight"></span>
+    <div class="hdr-prog"><div id="hdrProg"></div></div>
+  </div>
 </header>
 
 <main>
@@ -82,22 +252,24 @@
       </div>
     </div>
 
-    <div class="card">
-      <div class="row">
-        <div>
-          <div class="muted">还能吃</div>
-          <div class="big" id="kcalLeft">0</div>
+    <div class="card" id="heroCard">
+      <div class="rings">
+        <div class="ring-col">
+          <div class="ring-wrap" id="kcalWrap">
+            <svg class="ring" viewBox="0 0 120 120"><circle class="bg" cx="60" cy="60" r="52"/><circle class="fg" id="kcalRing" cx="60" cy="60" r="52"/></svg>
+            <div class="ring-center"><div class="muted">还能吃</div><div class="big" id="kcalLeft">0</div><div class="muted">kcal</div></div>
+          </div>
           <div class="muted" id="kcalLine"></div>
         </div>
-        <div style="text-align:right">
-          <div class="muted">蛋白质</div>
-          <div class="big" id="proteinNow">0</div>
+        <div class="ring-col">
+          <div class="ring-wrap" id="proteinWrap">
+            <svg class="ring" viewBox="0 0 120 120"><circle class="bg" cx="60" cy="60" r="52"/><circle class="fg" id="proteinRing" cx="60" cy="60" r="52" style="stroke:var(--blue)"/></svg>
+            <div class="ring-center"><div class="muted">蛋白质</div><div class="big" id="proteinNow">0</div><div class="muted" id="proteinPct">0%</div></div>
+          </div>
           <div class="muted" id="proteinLine"></div>
         </div>
       </div>
-      <div class="bar"><div id="kcalBar"></div></div>
-      <div class="bar"><div id="proteinBar" style="background:var(--blue)"></div></div>
-      <div class="muted" id="dayHint" style="margin-top:6px"></div>
+      <div class="muted" id="dayHint"></div>
     </div>
 
     <div class="card">
@@ -236,10 +408,11 @@
 </main>
 
 <nav>
-  <button class="on" data-tab="today">今天</button>
-  <button data-tab="weight">体重</button>
-  <button data-tab="foods">食物库</button>
-  <button data-tab="settings">设置</button>
+  <span class="ind" id="navInd"></span>
+  <button class="on" data-tab="today"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/></svg>今天</button>
+  <button data-tab="weight"><svg viewBox="0 0 24 24"><path d="M4 18l5-6 4 3 7-9"/><path d="M15 6h5v5"/></svg>体重</button>
+  <button data-tab="foods"><svg viewBox="0 0 24 24"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/></svg>食物库</button>
+  <button data-tab="settings"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>设置</button>
 </nav>
 <div class="toast" id="toast"></div>
 
@@ -296,7 +469,102 @@ function fmt(d) { return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.ge
 function today() { return fmt(new Date()); }
 function shift(ds, n) { const d = new Date(ds + 'T12:00:00'); d.setDate(d.getDate() + n); return fmt(d); }
 function day(ds) { return S.days[ds] || (S.days[ds] = { foods: [], ex: [] }); }
-function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('on'); setTimeout(() => t.classList.remove('on'), 1600); }
+let toastTimer;
+function toast(msg, opt = {}) {
+  const t = $('toast');
+  t.innerHTML = `<span>${esc(msg)}</span>` + (opt.action ? `<button>${esc(opt.action)}</button>` : '');
+  if (opt.action) t.querySelector('button').onclick = () => { t.classList.remove('on'); opt.fn(); };
+  t.classList.remove('on'); void t.offsetWidth; t.classList.add('on');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('on'), opt.action ? 4000 : 1600);
+}
+
+// ---------- 动效 ----------
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const RING_C = 2 * Math.PI * 52;
+const ease = t => 1 - Math.pow(1 - t, 3);
+function countTo(el, to, fmt, dur = 700) {
+  const from = el._v === undefined ? 0 : el._v;
+  el._v = to; cancelAnimationFrame(el._raf);
+  if (RM || from === to) { el.textContent = fmt(to); return; }
+  const t0 = performance.now();
+  const step = now => {
+    const k = Math.min(1, (now - t0) / dur);
+    el.textContent = fmt(from + (to - from) * ease(k));
+    if (k < 1) el._raf = requestAnimationFrame(step);
+  };
+  el._raf = requestAnimationFrame(step);
+}
+function animateNums(root) {
+  root.querySelectorAll('[data-num]').forEach(el => {
+    const dec = Number(el.dataset.dec || 0), sfx = el.dataset.sfx || '';
+    el._v = 0; countTo(el, Number(el.dataset.num), v => (dec ? v.toFixed(dec) : Math.round(v)) + sfx, 800);
+  });
+}
+const numSpan = (v, dec = 0, sfx = '') => `<span data-num="${v}" data-dec="${dec}" data-sfx="${sfx}">${dec ? Number(v).toFixed(dec) : Math.round(v)}${sfx}</span>`;
+function setRing(el, pct, color) {
+  el.style.stroke = color;
+  const off = RING_C * (1 - Math.max(0, Math.min(1, pct)));
+  if (!el._init) { el._init = true; requestAnimationFrame(() => requestAnimationFrame(() => el.style.strokeDashoffset = el._off)); }
+  else el.style.strokeDashoffset = off;
+  el._off = off;
+}
+function resetRing(el) {
+  el.style.transition = 'none'; el.style.strokeDashoffset = RING_C; void el.getBoundingClientRect();
+  el.style.transition = ''; el._init = false;
+}
+function retrigger(el, cls) { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+function shakeEl(id, msg) { const el = $(id); retrigger(el, 'shake'); setTimeout(() => el.classList.remove('shake'), 500); el.focus(); toast(msg); }
+function floatText(parent, text, color) {
+  if (RM) return;
+  const f = document.createElement('span'); f.className = 'floaty'; f.textContent = text; f.style.color = color;
+  parent.appendChild(f); setTimeout(() => f.remove(), 1200);
+}
+function flashBtn(btn, text) {
+  if (!btn._txt) btn._txt = btn.textContent;
+  btn.textContent = text; retrigger(btn, 'done-flash');
+  clearTimeout(btn._t); btn._t = setTimeout(() => { btn.textContent = btn._txt; btn.classList.remove('done-flash'); }, 900);
+}
+function confetti(el) {
+  if (RM) return;
+  const r = el.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  const colors = ['#22c55e', '#38bdf8', '#f59e0b', '#f472b6', '#a78bfa', '#facc15'];
+  for (let i = 0; i < 28; i++) {
+    const c = document.createElement('i'); c.className = 'confetti';
+    const a = Math.random() * Math.PI * 2, d = 60 + Math.random() * 90;
+    c.style.cssText = `left:${cx}px;top:${cy}px;background:${colors[i % colors.length]};--dx:${Math.cos(a) * d}px;--dy:${Math.sin(a) * d + 40}px;--rot:${Math.random() * 720 - 360}deg;animation-delay:${Math.random() * 80}ms`;
+    document.body.appendChild(c); setTimeout(() => c.remove(), 1200);
+  }
+}
+// 删除时先收起再真正删除
+function removeAnimated(li, done) {
+  if (!li || RM) return done();
+  li.style.height = li.offsetHeight + 'px'; void li.offsetHeight;
+  li.classList.add('leaving'); li.querySelectorAll('button').forEach(b => b.disabled = true);
+  setTimeout(done, 300);
+}
+// 渲染后高亮刚加的那一条
+let flash = null;
+function applyFlash(listId) {
+  if (!flash || flash.list !== listId) return;
+  const ul = $(listId);
+  const li = flash.nth ? ul.children[flash.nth - 1] : ul.querySelector(flash.sel)?.closest('li');
+  if (li) { li.classList.add('enter'); if (flash.scroll) li.scrollIntoView({ behavior: RM ? 'auto' : 'smooth', block: 'nearest' }); }
+  flash = null;
+}
+function staggerList(ul) {
+  [...ul.children].forEach((li, i) => li.style.setProperty('--i', Math.min(i, 12)));
+  retrigger(ul, 'stagger'); setTimeout(() => ul.classList.remove('stagger'), 900);
+}
+// 按钮涟漪
+document.addEventListener('pointerdown', e => {
+  const b = e.target.closest('button'); if (!b || RM || b.classList.contains('del') || b.closest('nav')) return;
+  const r = b.getBoundingClientRect(), size = Math.max(r.width, r.height);
+  const s = document.createElement('span'); s.className = 'ripple';
+  s.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX - r.left - size / 2}px;top:${e.clientY - r.top - size / 2}px`;
+  b.appendChild(s); setTimeout(() => s.remove(), 650);
+});
+addEventListener('scroll', () => document.querySelector('header').classList.toggle('scrolled', scrollY > 4), { passive: true });
+
 function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 
 // ---------- 计算 ----------
@@ -328,15 +596,18 @@ function renderToday() {
   const p = plan(), t = totals(curDate), d = day(curDate);
   const isToday = curDate === today();
   $('dateLabel').textContent = (isToday ? '今天 · ' : '') + curDate;
+  $('nextDay').disabled = isToday;
   const left = p.target - t.kcal;
-  $('kcalLeft').textContent = r0(left);
+  countTo($('kcalLeft'), left, r0);
   $('kcalLeft').className = 'big ' + (left < -150 ? 'bad' : left < 0 ? 'warn' : 'ok');
   $('kcalLine').textContent = `已吃 ${r0(t.kcal)} / 目标 ${r0(p.target)} kcal`;
-  $('proteinNow').textContent = r0(t.protein) + 'g';
+  countTo($('proteinNow'), t.protein, v => r0(v) + 'g');
+  const pPct = t.protein / p.protein;
+  $('proteinPct').textContent = r0(pPct * 100) + '%';
   $('proteinLine').textContent = `目标 ${r0(p.protein)}g`;
-  $('kcalBar').style.width = Math.min(100, t.kcal / p.target * 100) + '%';
-  $('kcalBar').style.background = left < 0 ? 'var(--warn)' : 'var(--accent)';
-  $('proteinBar').style.width = Math.min(100, t.protein / p.protein * 100) + '%';
+  setRing($('kcalRing'), t.kcal / p.target, left < -150 ? 'var(--bad)' : left < 0 ? 'var(--warn)' : 'var(--accent)');
+  setRing($('proteinRing'), pPct, 'var(--blue)');
+  $('proteinWrap').classList.toggle('done', pPct >= 1);
 
   let hint = '';
   const hour = new Date().getHours();
@@ -348,17 +619,33 @@ function renderToday() {
   $('foodList').innerHTML = d.foods.length ? d.foods.map((f, i) => `
     <li><span class="name">${esc(f.label || f.name)}</span>
       <span class="num">${r0(f.kcal)} kcal<br><span class="muted">${r1(f.protein)}g 蛋白</span></span>
-      <button class="del" data-food="${i}">×</button></li>`).join('')
-    : '<li class="muted">还没记录</li>';
+      <button class="del" data-food="${i}" aria-label="删除">×</button></li>`).join('')
+    : '<li class="muted empty">还没记录，从上面加一条吧</li>';
 
   $('exList').innerHTML = d.ex.length ? d.ex.map((e, i) => `
     <li><span class="name">${esc(e.type)}</span>
       <span class="num">${e.min || 0} 分钟${e.kcal ? ` · ${e.kcal} kcal` : ''}</span>
-      <button class="del" data-ex="${i}">×</button></li>`).join('')
-    : '<li class="muted">还没记录</li>';
+      <button class="del" data-ex="${i}" aria-label="删除">×</button></li>`).join('')
+    : '<li class="muted empty">今天还没运动</li>';
+  applyFlash('foodList'); applyFlash('exList');
 
   renderFoodPicker();
   $('hdrWeight').textContent = `${r1(p.w)} kg → ${S.settings.goal} kg`;
+  const st = Number(S.settings.start), gl = Number(S.settings.goal);
+  $('hdrProg').style.width = (st > gl ? Math.max(0, Math.min(1, (st - p.w) / (st - gl))) * 100 : 0) + '%';
+}
+// 加了一条之后：飘字 + 达标庆祝
+function afterAdd(kcal, protein, before) {
+  const p = plan(), t = totals(curDate);
+  if (kcal) floatText($('kcalWrap'), '+' + r0(kcal), t.kcal > p.target ? 'var(--warn)' : 'var(--accent)');
+  if (protein >= 1) setTimeout(() => floatText($('proteinWrap'), '+' + r1(protein) + 'g', 'var(--blue)'), 120);
+  if (before.protein < p.protein && t.protein >= p.protein) {
+    setTimeout(() => { confetti($('proteinWrap')); toast('蛋白质达标 🎉'); }, 500);
+    return true;
+  }
+  if (before.kcal <= p.target && t.kcal > p.target) retrigger($('kcalWrap'), 'over');
+  if (navigator.vibrate) navigator.vibrate(8);
+  return false;
 }
 
 function renderFoodPicker() {
@@ -371,7 +658,8 @@ function renderFoodPicker() {
     if (!recent.includes(f.name) && S.foods.some(x => x.name === f.name)) recent.push(f.name);
   }));
   const chips = (recent.length ? recent : S.foods.slice(0, 6).map(f => f.name)).slice(0, 8);
-  $('foodChips').innerHTML = chips.map(n => `<span class="chip" data-chip="${esc(n)}">${esc(n)}</span>`).join('');
+  const cur = S.foods[sel.value]?.name;
+  $('foodChips').innerHTML = chips.map(n => `<span class="chip${n === cur && $('foodAmt').value === '' && chipPicked ? ' on' : ''}" data-chip="${esc(n)}">${esc(n)}</span>`).join('');
   updatePreview();
 }
 function updatePreview() {
@@ -384,44 +672,89 @@ function updatePreview() {
     : `输入数量（${f.unit}）`;
 }
 
-$('foodSel').onchange = updatePreview;
+let chipPicked = false;
+$('foodSel').onchange = () => { chipPicked = false; document.querySelectorAll('.chip.on').forEach(c => c.classList.remove('on')); updatePreview(); };
 $('foodAmt').oninput = updatePreview;
 $('foodChips').onclick = e => {
   const n = e.target.dataset.chip; if (!n) return;
   const i = S.foods.findIndex(f => f.name === n);
-  if (i >= 0) { $('foodSel').value = i; $('foodAmt').focus(); updatePreview(); }
+  if (i >= 0) {
+    $('foodSel').value = i; chipPicked = true;
+    document.querySelectorAll('.chip.on').forEach(c => c.classList.remove('on'));
+    e.target.classList.add('on'); $('foodAmt').focus(); updatePreview();
+  }
 };
 $('addFood').onclick = () => {
   const f = S.foods[$('foodSel').value], amt = Number($('foodAmt').value);
-  if (!f || !(amt > 0)) return toast('先填数量');
-  day(curDate).foods.push({
+  if (!f || !(amt > 0)) return shakeEl('foodAmt', '先填数量');
+  const before = totals(curDate), item = {
     name: f.name, label: `${f.name} ${amt}${f.unit}`,
     kcal: f.kcal * amt / f.per, protein: f.protein * amt / f.per,
-  });
-  $('foodAmt').value = ''; save(); renderToday(); toast('已添加');
+  };
+  day(curDate).foods.push(item);
+  chipPicked = false; flash = { list: 'foodList', nth: day(curDate).foods.length };
+  $('foodAmt').value = ''; save(); renderToday(); flashBtn($('addFood'), '✓ 已添加');
+  afterAdd(item.kcal, item.protein, before);
 };
 $('addCustom').onclick = () => {
   const name = $('cName').value.trim(), kcal = Number($('cKcal').value), protein = Number($('cProt').value) || 0;
-  if (!name || !(kcal >= 0) || $('cKcal').value === '') return toast('填名称和热量');
+  if (!name) return shakeEl('cName', '填名称和热量');
+  if (!(kcal >= 0) || $('cKcal').value === '') return shakeEl('cKcal', '填名称和热量');
+  const before = totals(curDate);
   day(curDate).foods.push({ name, label: name, kcal, protein });
-  $('cName').value = $('cKcal').value = $('cProt').value = ''; save(); renderToday(); toast('已添加');
+  flash = { list: 'foodList', nth: day(curDate).foods.length };
+  $('cName').value = $('cKcal').value = $('cProt').value = ''; save(); renderToday(); flashBtn($('addCustom'), '✓ 已添加');
+  afterAdd(kcal, protein, before);
 };
 $('foodList').onclick = e => {
-  const i = e.target.dataset.food; if (i === undefined) return;
-  day(curDate).foods.splice(i, 1); save(); renderToday();
+  const b = e.target.closest('[data-food]'); if (!b) return;
+  const i = Number(b.dataset.food), dd = day(curDate);
+  removeAnimated(b.closest('li'), () => {
+    const [item] = dd.foods.splice(i, 1); save(); renderToday();
+    toast(`已删除 ${item.label || item.name}`, { action: '撤销', fn: () => {
+      dd.foods.splice(i, 0, item); save(); flash = { list: 'foodList', nth: i + 1 }; renderToday();
+    } });
+  });
 };
 $('addEx').onclick = () => {
   const min = Number($('exMin').value), kcal = Number($('exKcal').value) || 0;
-  if (!(min > 0)) return toast('填分钟数');
+  if (!(min > 0)) return shakeEl('exMin', '填分钟数');
   day(curDate).ex.push({ type: $('exType').value, min, kcal });
-  $('exMin').value = $('exKcal').value = ''; save(); renderToday(); toast('已记录');
+  flash = { list: 'exList', nth: day(curDate).ex.length };
+  $('exMin').value = $('exKcal').value = ''; save(); renderToday(); flashBtn($('addEx'), '💪 已记录');
+  if (navigator.vibrate) navigator.vibrate(8);
 };
 $('exList').onclick = e => {
-  const i = e.target.dataset.ex; if (i === undefined) return;
-  day(curDate).ex.splice(i, 1); save(); renderToday();
+  const b = e.target.closest('[data-ex]'); if (!b) return;
+  const i = Number(b.dataset.ex), dd = day(curDate);
+  removeAnimated(b.closest('li'), () => {
+    const [item] = dd.ex.splice(i, 1); save(); renderToday();
+    toast(`已删除 ${item.type}`, { action: '撤销', fn: () => {
+      dd.ex.splice(i, 0, item); save(); flash = { list: 'exList', nth: i + 1 }; renderToday();
+    } });
+  });
 };
-$('prevDay').onclick = () => { curDate = shift(curDate, -1); renderToday(); };
-$('nextDay').onclick = () => { if (curDate < today()) { curDate = shift(curDate, 1); renderToday(); } };
+function goDay(n) {
+  if (n > 0 && curDate >= today()) { retrigger($('dateLabel'), 'slide-r'); return; }
+  curDate = shift(curDate, n); renderToday();
+  retrigger($('dateLabel'), n < 0 ? 'slide-l' : 'slide-r');
+  staggerList($('foodList')); staggerList($('exList'));
+}
+$('prevDay').onclick = () => goDay(-1);
+$('nextDay').onclick = () => goDay(1);
+// 在日期 / 进度环卡片上左右滑动切换日期
+(() => {
+  let sx = 0, sy = 0, on = false;
+  ['heroCard', 'dateLabel'].forEach(id => {
+    const el = id === 'dateLabel' ? $(id).closest('.card') : $(id);
+    el.addEventListener('touchstart', e => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; on = true; }, { passive: true });
+    el.addEventListener('touchend', e => {
+      if (!on) return; on = false;
+      const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+      if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) goDay(dx > 0 ? -1 : 1);
+    }, { passive: true });
+  });
+})();
 $('copyDay').onclick = async () => {
   const p = plan(), t = totals(curDate), d = day(curDate);
   const lines = [
@@ -433,7 +766,7 @@ $('copyDay').onclick = async () => {
   if (d.ex.length) lines.push('', '运动：', ...d.ex.map(e => `- ${e.type} ${e.min} 分钟${e.kcal ? `，约 ${e.kcal} kcal` : ''}`));
   if (S.weights[curDate]) lines.push('', `体重：${S.weights[curDate]} kg`);
   const text = lines.join('\n');
-  try { await navigator.clipboard.writeText(text); toast('已复制'); }
+  try { await navigator.clipboard.writeText(text); flashBtn($('copyDay'), '✓ 已复制到剪贴板'); }
   catch (e) { prompt('复制下面的内容：', text); }
 };
 
@@ -463,11 +796,32 @@ function renderWeight() {
     const step = Math.max(1, Math.ceil((hi - lo) / 5));
     for (let v = lo; v <= hi; v += step) g += `<line x1="${P.l}" x2="${W - P.r}" y1="${y(v)}" y2="${y(v)}" stroke="#334155"/><text x="4" y="${y(v) + 4}">${v}</text>`;
     const gy = y(Number(S.settings.goal));
-    g += `<line x1="${P.l}" x2="${W - P.r}" y1="${gy}" y2="${gy}" stroke="#22c55e" stroke-dasharray="4 4"/>`;
-    g += ser.map(s => `<circle cx="${x(s.date)}" cy="${y(s.w)}" r="3" fill="#94a3b8"/>`).join('');
-    g += `<polyline fill="none" stroke="#38bdf8" stroke-width="2.5" points="${ser.map(s => `${x(s.date)},${y(s.avg)}`).join(' ')}"/>`;
+    g += `<line class="goal-line" x1="${P.l}" x2="${W - P.r}" y1="${gy}" y2="${gy}" stroke="#22c55e"/><text x="${W - P.r}" y="${gy - 5}" text-anchor="end" style="fill:#22c55e">目标 ${S.settings.goal}</text>`;
+    const pts = ser.map(s => `${x(s.date)},${y(s.avg)}`);
+    g += `<defs><linearGradient id="wg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#38bdf8" stop-opacity=".28"/><stop offset="1" stop-color="#38bdf8" stop-opacity="0"/></linearGradient></defs>`;
+    g += `<polygon class="area" fill="url(#wg)" points="${x(ser[0].date)},${H - P.b} ${pts.join(' ')} ${x(ser[ser.length - 1].date)},${H - P.b}"/>`;
+    g += ser.map((s, i) => `<circle class="dot" cx="${x(s.date)}" cy="${y(s.w)}" r="3" fill="#94a3b8" style="animation-delay:${r0(i / ser.length * 700)}ms"/>`).join('');
+    g += `<polyline class="trend" pathLength="1" fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" points="${pts.join(' ')}"/>`;
     g += `<text x="${P.l}" y="${H - 6}">${ser[0].date.slice(5)}</text><text x="${W - P.r}" y="${H - 6}" text-anchor="end">${ser[ser.length - 1].date.slice(5)}</text>`;
-    $('wChart').innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%">${g}</svg>`;
+    g += `<g class="cursor"><line y1="${P.t}" y2="${H - P.b}" stroke="#64748b" stroke-dasharray="3 3"/><circle r="5.5" fill="#0f172a" stroke="#38bdf8" stroke-width="2.5"/></g>`;
+    $('wChart').innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%">${g}</svg><div class="tip"></div>`;
+    // 按住 / 悬停查看某天
+    const svg = $('wChart').querySelector('svg'), cur = svg.querySelector('.cursor'), tip = $('wChart').querySelector('.tip');
+    const show = e => {
+      const r = svg.getBoundingClientRect(), k = r.width / W, mx = (e.clientX - r.left) / k;
+      let best = ser[0];
+      ser.forEach(s => { if (Math.abs(x(s.date) - mx) < Math.abs(x(best.date) - mx)) best = s; });
+      const cx = x(best.date);
+      cur.querySelector('line').setAttribute('x1', cx); cur.querySelector('line').setAttribute('x2', cx);
+      cur.querySelector('circle').setAttribute('cx', cx); cur.querySelector('circle').setAttribute('cy', y(best.w));
+      cur.classList.add('on');
+      tip.innerHTML = `${best.date.slice(5)} · <b>${best.w}</b> kg <span class="muted">均 ${r1(best.avg)}</span>`;
+      tip.style.left = Math.max(60, Math.min(r.width - 60, cx * k)) + 'px';
+      tip.classList.add('on');
+    };
+    const hide = () => { cur.classList.remove('on'); tip.classList.remove('on'); };
+    svg.addEventListener('pointerdown', show); svg.addEventListener('pointermove', show);
+    svg.addEventListener('pointerleave', hide); svg.addEventListener('pointerup', e => { if (e.pointerType !== 'mouse') setTimeout(hide, 1200); });
   }
   // 统计
   const start = Number(S.settings.start), goal = Number(S.settings.goal);
@@ -483,22 +837,35 @@ function renderWeight() {
     }
   }
   $('wStats').innerHTML = `
-    <div class="stat"><span class="muted">7 天平均</span><b>${last ? r1(last.avg) : '—'} kg</b></div>
-    <div class="stat"><span class="muted">比起始</span><b class="${last && last.avg < start ? 'ok' : ''}">${last ? r1(last.avg - start) : '—'} kg</b></div>
-    <div class="stat"><span class="muted">最近每周</span><b>${rate === null ? '—' : r1(rate) + ' kg'}</b></div>
+    <div class="stat"><span class="muted">7 天平均</span><b>${last ? numSpan(r1(last.avg), 1) : '—'} kg</b></div>
+    <div class="stat"><span class="muted">比起始</span><b class="${last && last.avg < start ? 'ok' : ''}">${last ? numSpan(r1(last.avg - start), 1) : '—'} kg</b></div>
+    <div class="stat"><span class="muted">最近每周</span><b>${rate === null ? '—' : numSpan(r1(rate), 1, ' kg')}</b></div>
     <div class="stat"><span class="muted">按这个速度到 ${goal}kg</span><b style="font-size:16px">${eta}</b></div>`;
+  animateNums($('wStats'));
   $('wList').innerHTML = ser.slice().reverse().slice(0, 60).map(s =>
     `<li><span class="name">${s.date}</span><span class="num">${s.w} kg <span class="muted">均 ${r1(s.avg)}</span></span>
-     <button class="del" data-w="${s.date}">×</button></li>`).join('') || '<li class="muted">还没记录</li>';
+     <button class="del" data-w="${s.date}" aria-label="删除">×</button></li>`).join('') || '<li class="muted empty">还没记录</li>';
+  applyFlash('wList');
 }
 $('addW').onclick = () => {
   const d = $('wDate').value, v = Number($('wVal').value);
-  if (!d || !(v > 20 && v < 400)) return toast('填一个合理的体重');
-  S.weights[d] = r1(v); $('wVal').value = ''; save(); renderWeight(); toast('已保存');
+  if (!d) return shakeEl('wDate', '选日期');
+  if (!(v > 20 && v < 400)) return shakeEl('wVal', '填一个合理的体重');
+  const prev = Object.values(S.weights), isLow = prev.length >= 3 && r1(v) < Math.min(...prev);
+  S.weights[d] = r1(v); $('wVal').value = '';
+  flash = { list: 'wList', sel: `[data-w="${d}"]` };
+  save(); renderWeight(); renderToday(); flashBtn($('addW'), '✓ 已保存');
+  if (isLow) { confetti($('addW')); toast('新低！继续保持 🎉'); }
 };
 $('wList').onclick = e => {
-  const d = e.target.dataset.w; if (!d) return;
-  delete S.weights[d]; save(); renderWeight();
+  const b = e.target.closest('[data-w]'); if (!b) return;
+  const d = b.dataset.w, v = S.weights[d];
+  removeAnimated(b.closest('li'), () => {
+    delete S.weights[d]; save(); renderWeight(); renderToday();
+    toast(`已删除 ${d}`, { action: '撤销', fn: () => {
+      S.weights[d] = v; save(); flash = { list: 'wList', sel: `[data-w="${d}"]` }; renderWeight(); renderToday();
+    } });
+  });
 };
 
 // ---------- 食物库 ----------
@@ -507,30 +874,41 @@ function renderLib() {
     <li><span class="name" data-edit="${i}" style="cursor:pointer">${esc(f.name)}<br>
       <span class="muted">每 ${f.per}${f.unit}</span></span>
       <span class="num">${f.kcal} kcal<br><span class="muted">${f.protein}g 蛋白</span></span>
-      <button class="del" data-lib="${i}">×</button></li>`).join('');
+      <button class="del" data-lib="${i}" aria-label="删除">×</button></li>`).join('');
+  applyFlash('libList');
 }
 $('libList').onclick = e => {
-  if (e.target.dataset.lib !== undefined) {
-    const f = S.foods[e.target.dataset.lib];
-    if (confirm(`删除「${f.name}」？`)) { S.foods.splice(e.target.dataset.lib, 1); save(); renderLib(); }
+  const b = e.target.closest('[data-lib]');
+  if (b) {
+    const i = Number(b.dataset.lib);
+    removeAnimated(b.closest('li'), () => {
+      const [f] = S.foods.splice(i, 1); save(); renderLib(); renderFoodPicker();
+      toast(`已删除「${f.name}」`, { action: '撤销', fn: () => {
+        S.foods.splice(i, 0, f); save(); flash = { list: 'libList', nth: i + 1 }; renderLib(); renderFoodPicker();
+      } });
+    });
     return;
   }
   const el = e.target.closest('[data-edit]'); if (!el) return;
   const f = S.foods[el.dataset.edit];
   $('lName').value = f.name; $('lPer').value = f.per; $('lUnit').value = f.unit;
   $('lKcal').value = f.kcal; $('lProt').value = f.protein;
-  $('lName').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  $('lName').scrollIntoView({ behavior: RM ? 'auto' : 'smooth', block: 'center' });
+  setTimeout(() => retrigger($('lName').closest('.card'), 'pulse'), 250);
 };
 $('saveLib').onclick = () => {
   const f = {
     name: $('lName').value.trim(), per: Number($('lPer').value), unit: $('lUnit').value,
     kcal: Number($('lKcal').value), protein: Number($('lProt').value) || 0,
   };
-  if (!f.name || !(f.per > 0) || $('lKcal').value === '') return toast('名称、数量、热量要填');
-  const i = S.foods.findIndex(x => x.name === f.name);
-  if (i >= 0) S.foods[i] = f; else S.foods.push(f);
+  if (!f.name) return shakeEl('lName', '名称、数量、热量要填');
+  if (!(f.per > 0)) return shakeEl('lPer', '名称、数量、热量要填');
+  if ($('lKcal').value === '') return shakeEl('lKcal', '名称、数量、热量要填');
+  let i = S.foods.findIndex(x => x.name === f.name);
+  if (i >= 0) S.foods[i] = f; else i = S.foods.push(f) - 1;
   ['lName', 'lKcal', 'lProt'].forEach(id => $(id).value = ''); $('lPer').value = 100;
-  save(); renderLib(); toast('已保存');
+  flash = { list: 'libList', nth: i + 1, scroll: true };
+  save(); renderLib(); renderFoodPicker(); flashBtn($('saveLib'), '✓ 已保存');
 };
 
 // ---------- 设置 ----------
@@ -539,10 +917,11 @@ function renderSettings() {
   for (const [id, k] of Object.entries(SET_FIELDS)) $(id).value = S.settings[k];
   const p = plan();
   $('calcBox').innerHTML = `
-    <div class="stat"><span class="muted">基础代谢</span><b>${r0(p.bmr)}</b></div>
-    <div class="stat"><span class="muted">每天总消耗</span><b>${r0(p.tdee)}</b></div>
-    <div class="stat"><span class="muted">每天吃</span><b class="ok">${r0(p.target)}</b></div>
-    <div class="stat"><span class="muted">蛋白质</span><b>${r0(p.protein)} g</b></div>`;
+    <div class="stat"><span class="muted">基础代谢</span><b>${numSpan(r0(p.bmr))}</b></div>
+    <div class="stat"><span class="muted">每天总消耗</span><b>${numSpan(r0(p.tdee))}</b></div>
+    <div class="stat"><span class="muted">每天吃</span><b class="ok">${numSpan(r0(p.target))}</b></div>
+    <div class="stat"><span class="muted">蛋白质</span><b>${numSpan(r0(p.protein), 0, ' g')}</b></div>`;
+  animateNums($('calcBox'));
   const perWeek = (p.tdee - p.target) * 7 / 7700;
   $('calcNote').textContent = `按当前体重 ${r1(p.w)}kg 计算，预计每周减约 ${r1(perWeek)} kg 脂肪。` +
     (p.clamped ? ` 缺口太大，已按最低 ${p.floor} kcal 处理。` : '') +
@@ -553,7 +932,8 @@ $('saveSet').onclick = () => {
     const v = $(id).value;
     S.settings[k] = k === 'sex' ? v : Number(v);
   }
-  S.setupDone = true; save(); renderSettings(); renderToday(); toast('已保存');
+  S.setupDone = true; save(); renderSettings(); renderToday(); flashBtn($('saveSet'), '✓ 已保存');
+  retrigger($('calcBox').closest('.card'), 'pulse');
 };
 
 // ---------- 备份 ----------
@@ -574,10 +954,18 @@ $('importFile').onchange = async e => {
 };
 
 // ---------- 导航 ----------
+const TABS = ['today', 'weight', 'foods', 'settings'];
+document.querySelectorAll('.tab').forEach(t => [...t.children].forEach((c, i) => c.style.setProperty('--i', i)));
 document.querySelector('nav').onclick = e => {
-  const t = e.target.dataset.tab; if (!t) return;
-  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+  const b = e.target.closest('[data-tab]'); if (!b) return;
+  const t = b.dataset.tab;
+  if (b.classList.contains('on')) { window.scrollTo({ top: 0, behavior: RM ? 'auto' : 'smooth' }); return; }
+  document.querySelectorAll('nav button').forEach(x => x.classList.toggle('on', x === b));
+  retrigger(b, 'bounce');
+  $('navInd').style.transform = `translateX(${TABS.indexOf(t) * 100}%)`;
   document.querySelectorAll('.tab').forEach(s => s.classList.toggle('on', s.id === 'tab-' + t));
+  if (t === 'today') { resetRing($('kcalRing')); resetRing($('proteinRing')); }
+  $('toast').classList.remove('on');
   renderAll(); window.scrollTo(0, 0);
 };
 function renderAll() { renderToday(); renderWeight(); renderLib(); renderSettings(); }
