@@ -630,9 +630,9 @@ function renderToday() {
   applyFlash('foodList'); applyFlash('exList');
 
   renderFoodPicker();
-  $('hdrWeight').textContent = `${r1(p.w)} kg → ${S.settings.goal} kg`;
+  $('hdrWeight').textContent = S.setupDone ? `${r1(p.w)} kg → ${S.settings.goal} kg` : '先在设置里填身体数据';
   const st = Number(S.settings.start), gl = Number(S.settings.goal);
-  $('hdrProg').style.width = (st > gl ? Math.max(0, Math.min(1, (st - p.w) / (st - gl))) * 100 : 0) + '%';
+  $('hdrProg').style.width = (S.setupDone && st > gl ? Math.max(0, Math.min(1, (st - p.w) / (st - gl))) * 100 : 0) + '%';
 }
 // 加了一条之后：飘字 + 达标庆祝
 function afterAdd(kcal, protein, before) {
