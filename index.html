@@ -63,6 +63,12 @@
   .stat b { display: block; font-size: 20px; }
   .toast { position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%); background: #334155; padding: 8px 14px; border-radius: 10px; font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none; }
   .toast.on { opacity: 1; }
+  /* 仪表盘模式：数据来自 data/log.json，由 Claude 记账，网页只读 */
+  .agent-only { display: none; }
+  body.agent .agent-only { display: block; }
+  body.agent .manual, body.agent button.del { display: none; }
+  body.agent #tab-settings input, body.agent #tab-settings select { pointer-events: none; opacity: .7; }
+  .coach { white-space: pre-line; }
 </style>
 </head>
 <body>
@@ -74,6 +80,11 @@
 <main>
   <!-- 今天 -->
   <section class="tab on" id="tab-today">
+    <div class="card agent-only" id="coachCard">
+      <h2>Claude 的点评</h2>
+      <div class="coach" id="coachText"></div>
+      <div class="muted" id="coachTime" style="margin-top:6px"></div>
+    </div>
     <div class="card">
       <div class="datebar">
         <button class="ghost" id="prevDay">‹</button>
@@ -100,7 +111,12 @@
       <div class="muted" id="dayHint" style="margin-top:6px"></div>
     </div>
 
-    <div class="card">
+    <div class="card agent-only">
+      <h2>最近 7 天</h2>
+      <div class="grid2" id="weekStats"></div>
+    </div>
+
+    <div class="card manual">
       <h2>添加食物</h2>
       <div class="chips" id="foodChips"></div>
       <div class="row">
@@ -128,7 +144,7 @@
     <div class="card">
       <h2>今天运动</h2>
       <ul class="list" id="exList"></ul>
-      <div class="row" style="margin-top:8px">
+      <div class="row manual" style="margin-top:8px">
         <select id="exType">
           <option>快走</option><option>力量训练</option><option>骑车</option>
           <option>跑步</option><option>跑外卖</option><option>其他</option>
@@ -136,18 +152,18 @@
         <input id="exMin" type="number" inputmode="numeric" placeholder="分钟" style="max-width:90px">
         <input id="exKcal" type="number" inputmode="numeric" placeholder="kcal(可选)" style="max-width:110px">
       </div>
-      <button class="ghost" id="addEx" style="margin-top:8px">记录运动</button>
-      <div class="muted" style="margin-top:6px">运动消耗只做记录，不加回可吃热量（目标里已经算了日常活动，手表也常常算高）。</div>
+      <button class="ghost manual" id="addEx" style="margin-top:8px">记录运动</button>
+      <div class="muted manual" style="margin-top:6px">运动消耗只做记录，不加回可吃热量（目标里已经算了日常活动，手表也常常算高）。</div>
     </div>
 
-    <div class="card">
+    <div class="card manual">
       <button class="ghost" id="copyDay">复制今天的汇总（发给 AI 或自己看）</button>
     </div>
   </section>
 
   <!-- 体重 -->
   <section class="tab" id="tab-weight">
-    <div class="card">
+    <div class="card manual">
       <h2>记录体重（早上空腹、上完厕所后称）</h2>
       <div class="row">
         <input id="wDate" type="date">
@@ -174,7 +190,7 @@
       <h2>食物库（按标签或估算填写）</h2>
       <ul class="list" id="libList"></ul>
     </div>
-    <div class="card">
+    <div class="card manual">
       <h2>新增 / 修改食物</h2>
       <label>名称（同名会覆盖）</label>
       <input id="lName" placeholder="如：鸡胸肉（熟）">
@@ -216,14 +232,15 @@
         <div><label>每日热量缺口 kcal</label><input id="sDef" type="number" inputmode="numeric"></div>
         <div><label>蛋白质 g/kg 体重</label><input id="sProtK" type="number" inputmode="decimal" step="0.1"></div>
       </div>
-      <button id="saveSet" style="margin-top:12px">保存设置</button>
+      <button class="manual" id="saveSet" style="margin-top:12px">保存设置</button>
+      <div class="muted agent-only" style="margin-top:8px">想改目标直接跟 Claude 说。</div>
     </div>
     <div class="card">
       <h2>计算结果</h2>
       <div class="grid2" id="calcBox"></div>
       <div class="muted" id="calcNote" style="margin-top:8px"></div>
     </div>
-    <div class="card">
+    <div class="card manual">
       <h2>数据</h2>
       <div class="muted" style="margin-bottom:8px">数据只存在这台设备的浏览器里，换手机或清缓存前记得导出。</div>
       <div class="row">
@@ -360,6 +377,7 @@ function renderToday() {
     : '<li class="muted">还没记录</li>';
 
   renderFoodPicker();
+  renderAgent();
   $('hdrWeight').textContent = `${r1(p.w)} kg → ${S.settings.goal} kg`;
 }
 
@@ -439,6 +457,38 @@ $('copyDay').onclick = async () => {
   catch (e) { prompt('复制下面的内容：', text); }
 };
 
+// ---------- 仪表盘（Claude 记账） ----------
+let agentMode = false;
+function renderAgent() {
+  if (!agentMode) return;
+  const c = S.coach || {};
+  $('coachText').textContent = c.text || '还没有点评';
+  $('coachTime').textContent = c.updated ? '更新于 ' + c.updated.replace('T', ' ').slice(0, 16) : '';
+  const p = plan(), end = today();
+  const ks = [...Array(7)].map((_, i) => shift(end, -i)).filter(k => S.days[k] && S.days[k].foods.length);
+  const avg = f => ks.length ? ks.reduce((a, k) => a + f(totals(k)), 0) / ks.length : 0;
+  const hit = ks.filter(k => { const t = totals(k); return t.kcal >= p.floor && t.kcal <= p.target + 100; }).length;
+  const exMin = [...Array(7)].map((_, i) => totals(shift(end, -i)).exMin).reduce((a, b) => a + b, 0);
+  $('weekStats').innerHTML = `
+    <div class="stat"><span class="muted">平均热量</span><b>${ks.length ? r0(avg(t => t.kcal)) : '—'}</b></div>
+    <div class="stat"><span class="muted">平均蛋白</span><b>${ks.length ? r0(avg(t => t.protein)) + ' g' : '—'}</b></div>
+    <div class="stat"><span class="muted">热量达标天数</span><b>${hit} / ${ks.length}</b></div>
+    <div class="stat"><span class="muted">运动</span><b>${exMin} 分钟</b></div>`;
+}
+// 部署在 GitHub Pages 上时读 data/log.json；直接打开本地文件读不到，就还是手动模式
+async function loadRemote() {
+  try {
+    const res = await fetch('data/log.json?t=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) return false;
+    const data = await res.json();
+    if (!data.settings || !data.days) return false;
+    S = Object.assign(clone(DEFAULT_STATE), data);
+    agentMode = true; document.body.classList.add('agent');
+    save(); renderAll();
+    return true;
+  } catch (e) { return false; }
+}
+
 // ---------- 体重 ----------
 function weightSeries() {
   const keys = Object.keys(S.weights).sort();
@@ -488,10 +538,23 @@ function renderWeight() {
     <div class="stat"><span class="muted">7 天平均</span><b>${last ? r1(last.avg) : '—'} kg</b></div>
     <div class="stat"><span class="muted">比起始</span><b class="${last && last.avg < start ? 'ok' : ''}">${last ? r1(last.avg - start) : '—'} kg</b></div>
     <div class="stat"><span class="muted">最近每周</span><b>${rate === null ? '—' : r1(rate) + ' kg'}</b></div>
-    <div class="stat"><span class="muted">按这个速度到 ${goal}kg</span><b style="font-size:16px">${eta}</b></div>`;
+    <div class="stat"><span class="muted">按这个速度到 ${goal}kg</span><b style="font-size:16px">${eta}</b></div>` + deadlineStats(last, rate, goal);
   $('wList').innerHTML = ser.slice().reverse().slice(0, 60).map(s =>
     `<li><span class="name">${s.date}</span><span class="num">${s.w} kg <span class="muted">均 ${r1(s.avg)}</span></span>
      <button class="del" data-w="${s.date}">×</button></li>`).join('') || '<li class="muted">还没记录</li>';
+}
+// 截止日期：离目标日期还剩几天、每周需要减多少、现在的速度够不够
+function deadlineStats(last, rate, goal) {
+  const gd = S.settings.goalDate; if (!gd) return '';
+  const from = last ? last.date : today(), cur = last ? last.avg : Number(S.settings.start);
+  const days = Math.round((new Date(gd) - new Date(from)) / 864e5);
+  if (days <= 0) return `<div class="stat"><span class="muted">目标日期 ${gd}</span><b style="font-size:16px">已到期</b></div>`;
+  const need = (cur - goal) / days * 7;
+  if (need <= 0) return `<div class="stat"><span class="muted">目标日期 ${gd}</span><b class="ok" style="font-size:16px">已达到</b></div>`;
+  const on = rate !== null && -rate >= need * 0.9;
+  return `
+    <div class="stat"><span class="muted">离 ${gd.slice(5)} 还剩 ${days} 天，每周需减</span><b class="${need > 1 ? 'warn' : ''}">${r1(need)} kg</b></div>
+    <div class="stat"><span class="muted">按现在速度</span><b class="${rate === null ? '' : on ? 'ok' : 'warn'}" style="font-size:16px">${rate === null ? '数据还不够' : on ? '赶得上' : '会慢一点'}</b></div>`;
 }
 $('addW').onclick = () => {
   const d = $('wDate').value, v = Number($('wVal').value);
@@ -609,10 +672,14 @@ document.querySelector('nav').onclick = e => {
 function renderAll() { renderToday(); renderWeight(); renderLib(); renderSettings(); }
 
 renderAll();
-if (!S.setupDone) {
-  document.querySelector('nav button[data-tab="settings"]').click();
-  toast('先填一下身体数据');
-}
+loadRemote().then(ok => {
+  if (!ok && !S.setupDone) {
+    document.querySelector('nav button[data-tab="settings"]').click();
+    toast('先填一下身体数据');
+  }
+});
+// 回到页面时刷新一下，拿到 Claude 刚记的
+document.addEventListener('visibilitychange', () => { if (!document.hidden && agentMode) loadRemote(); });
 </script>
 </body>
 </html>
