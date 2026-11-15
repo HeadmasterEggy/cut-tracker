@@ -142,7 +142,8 @@
     background: rgba(11,18,34,.86); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
     border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom);
   }
-  nav .ind { position: absolute; top: 0; left: 0; width: 25%; height: 52px; pointer-events: none; transition: transform .5s var(--spring); }
+  nav .ind { position: absolute; top: 0; left: 0; width: 25%; height: 52px; pointer-events: none; transition: transform .5s var(--spring), width .3s, height .3s; }
+  nav .brand, nav .side-foot { display: none; }
   nav .ind::before {
     content: ''; position: absolute; top: 5px; left: 50%; width: 52px; height: 28px; margin-left: -26px;
     border-radius: 999px; background: rgba(34,197,94,.16);
@@ -227,6 +228,81 @@
   @keyframes dash { to { stroke-dashoffset: -200; } }
   @keyframes confetti { 0% { opacity: 1; transform: translate(0, 0) rotate(0); } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); } }
 
+  .d-only { display: none; }
+
+  /* ---------- 电脑端：侧边栏 + 仪表盘 ---------- */
+  @media (min-width: 900px) {
+    .d-only { display: initial; } .m-only { display: none; }
+    body { padding: 0 0 32px 232px; }
+    header { padding: 22px 32px 14px; }
+    header h1 { font-size: 24px; }
+    .hdr-prog { width: 220px; height: 6px; }
+    main { max-width: 1280px; padding: 8px 32px; }
+    .card { padding: 18px 20px; margin-bottom: 0; transition: transform .3s var(--ease), box-shadow .3s, border-color .3s; }
+    .card:hover { border-color: rgba(255,255,255,.08); box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+    .tab.on { display: grid; gap: 18px; align-items: start; }
+
+    nav {
+      top: 0; bottom: 0; right: auto; width: 232px; flex-direction: column; gap: 4px;
+      padding: 26px 14px; border-top: none; border-right: 1px solid var(--line);
+      background: rgba(11,18,34,.7);
+    }
+    nav .brand { display: flex; align-items: center; gap: 10px; font-size: 19px; font-weight: 700; padding: 0 10px 22px; color: var(--text); }
+    nav .brand i { width: 30px; height: 30px; border-radius: 9px; background: linear-gradient(135deg, var(--accent), var(--blue)); box-shadow: 0 4px 14px rgba(34,197,94,.35); }
+    nav button {
+      flex: none; flex-direction: row; justify-content: flex-start; gap: 12px; font-size: 15px;
+      padding: 11px 14px; border-radius: 12px; transition: color .25s, background .25s;
+    }
+    nav button:hover:not(.on) { color: var(--text); background: rgba(255,255,255,.04); }
+    nav .ind { width: auto; height: auto; }
+    nav .ind::before { top: 0; left: 0; width: 100%; height: 100%; margin: 0; border-radius: 12px; background: rgba(34,197,94,.14); box-shadow: inset 3px 0 0 var(--accent); }
+    nav button.on svg { transform: scale(1.1); }
+    nav .side-foot { margin-top: auto; padding: 0 10px; }
+
+    .toast { bottom: 28px; left: calc(50% + 116px); }
+
+    button:not(.ghost):not(.del):hover { filter: brightness(1.08); box-shadow: 0 6px 20px rgba(34,197,94,.3); }
+    button.ghost:hover { border-color: #475569; background: rgba(255,255,255,.03); }
+    .chip:hover { border-color: #475569; }
+    .list li { transition: background .2s; }
+    .list li:hover { background: rgba(255,255,255,.03); }
+    .stat:hover { border-color: var(--line); }
+
+    /* 今天 */
+    #tab-today.on { grid-template-columns: 1.05fr 1.2fr 1fr; grid-template-areas: "date date date" "hero add ex" "hero list copy" "hero list ." ; }
+    #tab-today > :nth-child(1) { padding: 10px 14px; }
+    #tab-today > :nth-child(1) { grid-area: date; } #tab-today > :nth-child(2) { grid-area: hero; }
+    #tab-today > :nth-child(3) { grid-area: add; } #tab-today > :nth-child(4) { grid-area: list; }
+    #tab-today > :nth-child(5) { grid-area: ex; } #tab-today > :nth-child(6) { grid-area: copy; }
+    #tab-today .datebar { max-width: 460px; margin: 0 auto; }
+    .rings { flex-direction: column; align-items: center; gap: 22px; padding: 6px 0; }
+    .ring-wrap { width: 190px; }
+    .ring-center .big { font-size: 38px; }
+    #foodList, #wList, #libList { max-height: 520px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #334155 transparent; }
+
+    /* 体重 */
+    #tab-weight.on { grid-template-columns: 2fr 1fr; grid-template-areas: "stats stats" "chart rec" "chart hist"; }
+    #tab-weight > :nth-child(1) { grid-area: rec; } #tab-weight > :nth-child(2) { grid-area: chart; }
+    #tab-weight > :nth-child(3) { grid-area: stats; } #tab-weight > :nth-child(4) { grid-area: hist; }
+    #tab-weight #wStats { grid-template-columns: repeat(4, 1fr); }
+    #tab-weight #wStats b { font-size: 24px; }
+    #wList { max-height: 300px; }
+
+    /* 食物库 */
+    #tab-foods.on { grid-template-columns: 1.6fr 1fr; }
+    #tab-foods > :nth-child(2) { position: sticky; top: 80px; }
+    #libList { columns: 2; column-gap: 24px; max-height: none; }
+    #libList li { break-inside: avoid; }
+
+    /* 设置 */
+    #tab-settings.on { grid-template-columns: 1.4fr 1fr; grid-template-areas: "body calc" "body data"; }
+    #tab-settings > :nth-child(1) { grid-area: body; } #tab-settings > :nth-child(2) { grid-area: calc; } #tab-settings > :nth-child(3) { grid-area: data; }
+  }
+  @media (min-width: 900px) and (max-width: 1180px) {
+    #tab-today.on { grid-template-columns: 1fr 1.3fr; grid-template-areas: "date date" "hero add" "hero list" "ex list" "copy list"; }
+    #libList, #wList { columns: 1; }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; animation-delay: 0s !important; transition-duration: .01ms !important; }
   }
@@ -234,7 +310,7 @@
 </head>
 <body>
 <header>
-  <h1>减脂记录</h1>
+  <h1><span class="m-only">减脂记录</span><span class="d-only" id="pageTitle">今天</span></h1>
   <div class="hdr-r">
     <span class="muted" id="hdrWeight"></span>
     <div class="hdr-prog"><div id="hdrProg"></div></div>
@@ -410,11 +486,13 @@
 </main>
 
 <nav>
+  <div class="brand"><i></i>减脂记录</div>
   <span class="ind" id="navInd"></span>
   <button class="on" data-tab="today"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/></svg>今天</button>
   <button data-tab="weight"><svg viewBox="0 0 24 24"><path d="M4 18l5-6 4 3 7-9"/><path d="M15 6h5v5"/></svg>体重</button>
   <button data-tab="foods"><svg viewBox="0 0 24 24"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/></svg>食物库</button>
   <button data-tab="settings"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>设置</button>
+  <div class="side-foot muted">数据只存在本机浏览器<br>← → 键切换日期</div>
 </nav>
 <div class="toast" id="toast"></div>
 
@@ -788,7 +866,7 @@ function renderWeight() {
   if (ser.length < 2) {
     $('wChart').innerHTML = '<div class="muted">记录两天以上就会出现趋势图。</div>';
   } else {
-    const W = 600, H = 220, P = { l: 36, r: 10, t: 10, b: 24 };
+    const W = 600, H = innerWidth >= 900 ? 300 : 220, P = { l: 36, r: 10, t: 10, b: 24 };
     const t0 = new Date(ser[0].date).getTime(), t1 = new Date(ser[ser.length - 1].date).getTime();
     const vals = ser.map(s => s.w).concat([Number(S.settings.goal)]);
     const lo = Math.floor(Math.min(...vals) - 0.5), hi = Math.ceil(Math.max(...vals) + 0.5);
@@ -980,7 +1058,18 @@ $('importFile').onchange = async e => {
 };
 
 // ---------- 导航 ----------
-const TABS = ['today', 'weight', 'foods', 'settings'];
+// 导航指示块跟随当前按钮（手机底栏 / 电脑侧栏通用）
+function moveInd() {
+  const b = document.querySelector('nav button.on'), ind = $('navInd');
+  ind.style.transform = `translate(${b.offsetLeft}px, ${b.offsetTop}px)`;
+  ind.style.width = b.offsetWidth + 'px'; ind.style.height = b.offsetHeight + 'px';
+}
+addEventListener('resize', () => { const ind = $('navInd'); ind.style.transition = 'none'; moveInd(); void ind.offsetWidth; ind.style.transition = ''; });
+// 电脑上用方向键切换日期
+addEventListener('keydown', e => {
+  if (!$('tab-today').classList.contains('on') || e.target.closest('input, select, textarea')) return;
+  if (e.key === 'ArrowLeft') goDay(-1); else if (e.key === 'ArrowRight') goDay(1);
+});
 document.querySelectorAll('.tab').forEach(t => [...t.children].forEach((c, i) => c.style.setProperty('--i', i)));
 document.querySelector('nav').onclick = e => {
   const b = e.target.closest('[data-tab]'); if (!b) return;
@@ -988,7 +1077,8 @@ document.querySelector('nav').onclick = e => {
   if (b.classList.contains('on')) { window.scrollTo({ top: 0, behavior: RM ? 'auto' : 'smooth' }); return; }
   document.querySelectorAll('nav button').forEach(x => x.classList.toggle('on', x === b));
   retrigger(b, 'bounce');
-  $('navInd').style.transform = `translateX(${TABS.indexOf(t) * 100}%)`;
+  $('pageTitle').textContent = b.textContent.trim();
+  moveInd();
   document.querySelectorAll('.tab').forEach(s => s.classList.toggle('on', s.id === 'tab-' + t));
   if (t === 'today') { resetRing($('kcalRing')); resetRing($('proteinRing')); }
   $('toast').classList.remove('on');
@@ -996,7 +1086,7 @@ document.querySelector('nav').onclick = e => {
 };
 function renderAll() { renderToday(); renderWeight(); renderLib(); renderSettings(); }
 
-renderAll();
+renderAll(); moveInd();
 if (!S.setupDone) {
   document.querySelector('nav button[data-tab="settings"]').click();
   toast('先填一下身体数据');
