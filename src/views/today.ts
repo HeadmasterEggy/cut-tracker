@@ -70,19 +70,20 @@ function renderDeficit(tdee: number, eaten: number, isToday: boolean) {
   $('deficitTitle').textContent = `热量缺口（${dp.goalDate.slice(5)} 到 ${goal} kg）`;
   if (dp.remaining <= 0) {
     box.innerHTML = `<div class="stat"><span class="muted">还差</span><b class="ok">已到目标</b></div>`;
-    $('deficitNote').textContent = ''; $('deficitBar').style.width = '100%';
+    $('deficitNote').textContent = $('deficitDone').textContent = ''; $('deficitBar').style.width = '100%';
     return;
   }
-  const over = dp.daysLeft <= 0;
+  const over = dp.daysLeft <= 0, floor = plan().floor, eat = tdee - dp.perDay;
   box.innerHTML = `
+    <div class="stat key"><span class="muted">每天需要缺口</span><b class="${dp.perDay > dp.maxPerDay ? 'warn' : ''}">${over ? '已到期' : `${k(dp.perDay)} <small>kcal</small>`}</b><small class="muted">${over ? dp.goalDate : `剩 ${dp.daysLeft} 天（含今天）`}</small></div>
+    <div class="stat key"><span class="muted">每天只能吃</span><b class="${eat < floor ? 'bad' : 'ok'}">${over ? '—' : `${k(eat)} <small>kcal</small>`}</b><small class="muted">消耗约 ${k(tdee)} − 缺口</small></div>
     <div class="stat"><span class="muted">还差总缺口</span><b>${k(dp.remaining)} <small>kcal</small></b><small class="muted">${w} → ${goal} kg</small></div>
-    <div class="stat"><span class="muted">每天需要缺口</span><b class="${dp.perDay > dp.maxPerDay ? 'warn' : ''}">${over ? '已到期' : `${k(dp.perDay)} <small>kcal</small>`}</b><small class="muted">${over ? dp.goalDate : `剩 ${dp.daysLeft} 天（含今天）`}</small></div>
-    <div class="stat"><span class="muted">${isToday ? '今天缺口（到目前）' : '当天缺口'}</span><b class="${dayDef < 0 ? 'bad' : ''}">${dayDef < 0 ? '超出 ' + k(-dayDef) : k(dayDef)} <small>kcal</small></b><small class="muted">消耗约 ${k(tdee)} − 吃了 ${k(eaten)}</small></div>
-    <div class="stat"><span class="muted">已完成</span><b>${k(dp.done)} <small>/ ${k(dp.total)}</small></b><small class="muted">${S.settings.start} → ${w} kg</small></div>`;
+    <div class="stat"><span class="muted">${isToday ? '今天缺口（到目前）' : '当天缺口'}</span><b class="${dayDef < 0 ? 'bad' : ''}">${dayDef < 0 ? '超出 ' + k(-dayDef) : k(dayDef)} <small>kcal</small></b><small class="muted">消耗约 ${k(tdee)} − 吃了 ${k(eaten)}</small></div>`;
+  $('deficitDone').textContent = `已完成 ${k(dp.done)} / ${k(dp.total)} kcal（${S.settings.start} → ${w} kg）`;
   $('deficitBar').style.width = (dp.total ? dp.done / dp.total * 100 : 0) + '%';
   $('deficitNote').textContent = over ? '' : dp.perDay > dp.maxPerDay
-    ? `每天缺 ${k(dp.perDay)} 等于只吃约 ${k(tdee - dp.perDay)} kcal，低于 ${plan().floor} 下限，做不到。按 ${plan().floor} 吃每天最多缺 ${k(dp.maxPerDay)}，${dp.goalDate.slice(5)} 大约到 ${r1(dp.projected)} kg。`
-    : `每天吃约 ${k(tdee - dp.perDay)} kcal 就能按时到 ${goal} kg。`;
+    ? `⚠️ 每天只吃 ${k(eat)} kcal 低于 ${floor} 下限，不要这么吃。按 ${floor} 吃（每天缺 ${k(dp.maxPerDay)}），${dp.goalDate.slice(5)} 大约到 ${r1(dp.projected)} kg。`
+    : `每天吃 ${k(eat)} kcal 左右就能按时到 ${goal} kg。`;
 }
 
 const ring = (id: string) => document.getElementById(id) as unknown as SVGElement;

@@ -95,6 +95,8 @@ label { display: block; font-size: 13px; color: var(--muted); margin: 8px 0 4px;
 #deficitBox .stat b small { color: var(--muted); font-weight: 400; }
 #deficitBox .stat > small { display: block; margin-top: 2px; }
 #deficitNote:not(:empty) { margin-top: 8px; color: #fcd34d; }
+#deficitBox .stat.key b { font-size: 26px; }
+#deficitBox { margin-bottom: 4px; }
 
 /* 列表 */
 .list { list-style: none; margin: 0; padding: 0; }
