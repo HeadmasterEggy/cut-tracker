@@ -69,21 +69,29 @@ function renderDeficit(tdee: number, eaten: number, isToday: boolean) {
   const goal = S.settings.goal, w = r1(plan().w), dayDef = tdee - eaten;
   $('deficitTitle').textContent = `热量缺口（${dp.goalDate.slice(5)} 到 ${goal} kg）`;
   if (dp.remaining <= 0) {
-    box.innerHTML = `<div class="stat"><span class="muted">还差</span><b class="ok">已到目标</b></div>`;
-    $('deficitNote').textContent = $('deficitDone').textContent = ''; $('deficitBar').style.width = '100%';
+    box.innerHTML = `<div class="dz-key"><div class="dz-tile ok"><span>还差</span><b>已到目标 🎉</b></div></div>`;
+    $('deficitNote').textContent = $('deficitDone').innerHTML = ''; $('deficitBar').style.width = '100%';
     return;
   }
-  const over = dp.daysLeft <= 0, floor = plan().floor, eat = tdee - dp.perDay;
-  box.innerHTML = `
-    <div class="stat key"><span class="muted">每天需要缺口</span><b class="${dp.perDay > dp.maxPerDay ? 'warn' : ''}">${over ? '已到期' : `${k(dp.perDay)} <small>kcal</small>`}</b><small class="muted">${over ? dp.goalDate : `剩 ${dp.daysLeft} 天（含今天）`}</small></div>
-    <div class="stat key"><span class="muted">每天只能吃</span><b class="${eat < floor ? 'bad' : 'ok'}">${over ? '—' : `${k(eat)} <small>kcal</small>`}</b><small class="muted">消耗约 ${k(tdee)} − 缺口</small></div>
-    <div class="stat"><span class="muted">还差总缺口</span><b>${k(dp.remaining)} <small>kcal</small></b><small class="muted">${w} → ${goal} kg</small></div>
-    <div class="stat"><span class="muted">${isToday ? '今天缺口（到目前）' : '当天缺口'}</span><b class="${dayDef < 0 ? 'bad' : ''}">${dayDef < 0 ? '超出 ' + k(-dayDef) : k(dayDef)} <small>kcal</small></b><small class="muted">消耗约 ${k(tdee)} − 吃了 ${k(eaten)}</small></div>`;
-  $('deficitDone').textContent = `已完成 ${k(dp.done)} / ${k(dp.total)} kcal（${S.settings.start} → ${w} kg）`;
-  $('deficitBar').style.width = (dp.total ? dp.done / dp.total * 100 : 0) + '%';
+  const over = dp.daysLeft <= 0, floor = plan().floor, eat = tdee - dp.perDay, low = eat < floor;
+  const tone = (v: boolean) => v ? 'bad' : 'ok';
+  box.innerHTML = over
+    ? `<div class="dz-key"><div class="dz-tile warn"><span>目标日期 ${dp.goalDate}</span><b>已到期</b></div></div>`
+    : `<div class="dz-key">
+      <div class="dz-tile ${dp.perDay > dp.maxPerDay ? 'warn' : 'ok'}"><span>每天需要缺口</span><b>${k(dp.perDay)}<small>kcal</small></b><em>剩 ${dp.daysLeft} 天（含今天）</em></div>
+      <div class="dz-tile ${tone(low)}"><span>每天只能吃</span><b>${k(eat)}<small>kcal</small></b><em>${low ? `低于 ${floor} 下限` : '按这个吃能按时到'}</em></div>
+    </div>
+    <div class="dz-eq">消耗 <b>${k(tdee)}</b><i>−</i>缺口 <b>${k(dp.perDay)}</b><i>=</i>可吃 <b class="${tone(low)}">${k(eat)}</b></div>`;
+  box.innerHTML += `<div class="dz-mini">
+      <div><span>还差总缺口</span><b>${k(dp.remaining)}<small>kcal</small></b><em>${w} → ${goal} kg</em></div>
+      <div><span>${isToday ? '今天缺口（到目前）' : '当天缺口'}</span><b class="${dayDef < 0 ? 'bad' : ''}">${dayDef < 0 ? '超 ' + k(-dayDef) : k(dayDef)}<small>kcal</small></b><em>吃了 ${k(eaten)}</em></div>
+    </div>`;
+  const pct = dp.total ? dp.done / dp.total * 100 : 0;
+  $('deficitDone').innerHTML = `<span>已完成 <b>${r0(pct)}%</b> · ${S.settings.start} → ${w} kg</span><span>${k(dp.done)} / ${k(dp.total)} kcal</span>`;
+  $('deficitBar').style.width = pct + '%';
   $('deficitNote').textContent = over ? '' : dp.perDay > dp.maxPerDay
-    ? `⚠️ 每天只吃 ${k(eat)} kcal 低于 ${floor} 下限，不要这么吃。按 ${floor} 吃（每天缺 ${k(dp.maxPerDay)}），${dp.goalDate.slice(5)} 大约到 ${r1(dp.projected)} kg。`
-    : `每天吃 ${k(eat)} kcal 左右就能按时到 ${goal} kg。`;
+    ? `⚠️ ${k(eat)} kcal 低于 ${floor} 下限，不要这么吃。按 ${floor} 吃（每天缺 ${k(dp.maxPerDay)}），${dp.goalDate.slice(5)} 大约到 ${r1(dp.projected)} kg。`
+    : '';
 }
 
 const ring = (id: string) => document.getElementById(id) as unknown as SVGElement;
