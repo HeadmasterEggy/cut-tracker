@@ -91,10 +91,44 @@ label { display: block; font-size: 13px; color: var(--muted); margin: 8px 0 4px;
 
 .bar { height: 10px; background: #0b1222; border-radius: 6px; overflow: hidden; margin: 6px 0 2px; }
 .bar > div { height: 100%; background: var(--accent); transition: width .6s var(--ease); }
-#deficitBox .stat small { font-size: 12px; }
-#deficitBox .stat b small { color: var(--muted); font-weight: 400; }
-#deficitBox .stat > small { display: block; margin-top: 2px; }
-#deficitNote:not(:empty) { margin-top: 8px; color: #fcd34d; }
+/* 热量缺口卡片 */
+.dz-key { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.dz-tile {
+  --c: var(--accent); --c-rgb: 34,197,94;
+  position: relative; overflow: hidden; border-radius: 14px; padding: 12px 14px;
+  background: linear-gradient(160deg, rgba(var(--c-rgb),.16), rgba(var(--c-rgb),.04) 70%);
+  border: 1px solid rgba(var(--c-rgb),.28);
+}
+.dz-tile.warn { --c: var(--warn); --c-rgb: 245,158,11; }
+.dz-tile.bad { --c: var(--bad); --c-rgb: 239,68,68; }
+.dz-tile::before { content: ''; position: absolute; left: 0; top: 12px; bottom: 12px; width: 3px; border-radius: 0 3px 3px 0; background: var(--c); }
+.dz-tile span { display: block; font-size: 13px; color: var(--text); opacity: .85; font-weight: 600; }
+.dz-tile b { display: block; margin: 4px 0 2px; font-size: 30px; line-height: 1.1; color: var(--c); font-variant-numeric: tabular-nums; letter-spacing: -.5px; }
+.dz-tile b small, .dz-mini b small { font-size: 12px; font-weight: 500; color: var(--muted); margin-left: 4px; letter-spacing: 0; }
+.dz-tile em, .dz-mini em { display: block; font-style: normal; font-size: 12px; color: var(--muted); }
+.dz-eq {
+  display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center; gap: 4px 6px;
+  margin: 10px 0 12px; padding: 8px 10px; border-radius: 10px; background: #0b1222;
+  font-size: 13px; color: var(--muted);
+}
+.dz-eq b { color: var(--text); font-size: 15px; font-variant-numeric: tabular-nums; }
+.dz-eq b.ok { color: var(--accent); } .dz-eq b.bad { color: var(--bad); }
+.dz-eq i { font-style: normal; color: #64748b; padding: 0 2px; }
+.dz-mini { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.dz-mini > div { padding: 10px 12px; border-radius: 12px; background: #0b1222; }
+.dz-mini span { display: block; font-size: 12px; color: var(--muted); }
+.dz-mini b { display: block; font-size: 20px; margin: 2px 0 1px; font-variant-numeric: tabular-nums; }
+.dz-prog { margin-top: 14px; }
+.dz-prog-h { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+.dz-prog-h b { color: var(--accent); }
+.dz-prog .bar { height: 8px; margin-top: 6px; }
+.dz-prog .bar > div { background: linear-gradient(90deg, var(--accent), var(--blue)); border-radius: 6px; }
+#deficitNote:not(:empty) {
+  margin-top: 12px; padding: 9px 12px; border-radius: 10px; font-size: 13px; line-height: 1.5;
+  color: #fcd34d; background: rgba(245,158,11,.08); border: 1px solid rgba(245,158,11,.22);
+}
+.dz-foot { margin-top: 10px; font-size: 11px; color: #64748b; }
+@media (min-width: 900px) { .dz-tile b { font-size: 34px; } }
 
 /* 列表 */
 .list { list-style: none; margin: 0; padding: 0; }
