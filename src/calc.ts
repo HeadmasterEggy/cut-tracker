@@ -42,3 +42,30 @@ export function weightSeries(): WeightPoint[] {
     return { date: k, w: S.weights[k], avg: win.reduce((a, b) => a + b, 0) / win.length };
   });
 }
+
+/** 1 kg 脂肪约 7700 kcal */
+export const KCAL_PER_KG = 7700;
+
+export interface DeficitPlan {
+  goalDate: string; daysLeft: number; // 含今天
+  remaining: number; // 还差的总缺口（现在体重 → 目标）
+  total: number; done: number; // 起始 → 目标的总缺口、已完成（按体重）
+  perDay: number; // 每天需要的缺口
+  maxPerDay: number; // 吃到下限时每天最多的缺口
+  projected: number; // 按下限吃到截止日大约的体重
+}
+
+/** 离目标还差多少热量缺口、每天要缺多少。没设截止日期返回 null */
+export function deficitPlan(from: string): DeficitPlan | null {
+  const gd = S.settings.goalDate; if (!gd) return null;
+  const p = plan(), goal = Number(S.settings.goal), start = Number(S.settings.start);
+  const daysLeft = Math.round((new Date(gd + 'T12:00:00').getTime() - new Date(from + 'T12:00:00').getTime()) / 864e5) + 1;
+  const remaining = Math.max(0, (p.w - goal) * KCAL_PER_KG);
+  const total = Math.max(0, (start - goal) * KCAL_PER_KG);
+  const maxPerDay = Math.max(0, p.tdee - p.floor);
+  return {
+    goalDate: gd, daysLeft, remaining, total, done: Math.max(0, Math.min(total, total - remaining)),
+    perDay: daysLeft > 0 ? remaining / daysLeft : 0, maxPerDay,
+    projected: Math.max(goal, p.w - maxPerDay * Math.max(0, daysLeft) / KCAL_PER_KG),
+  };
+}

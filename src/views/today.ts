@@ -1,6 +1,6 @@
 // 「今天」页：进度环、吃了什么、运动、日期切换
 import { S, curDate, setCurDate, day, save } from '../state';
-import { plan, totals, type Totals } from '../calc';
+import { deficitPlan, plan, totals, type Totals } from '../calc';
 import { $, $in, $sel, esc, r0, r1, shift, today, toast } from '../util';
 import {
   animateNums, applyFlash, confetti, countTo, flashBtn, floatText, numSpan, removeAnimated, retrigger,
@@ -39,6 +39,7 @@ export function renderToday() {
     <div class="stat"><span class="muted">运动</span><b>${numSpan(t.exMin)} <small>分钟${t.exKcal ? ` · ${r0(t.exKcal)} kcal` : ''}</small></b></div>
     <div class="stat"><span class="muted">${wToday ? '当天体重' : '最近体重'}</span><b>${numSpan(r1(wToday || p.w), 1)} <small>kg · 离目标 ${r1(Math.max(0, (wToday || p.w) - gl0))}</small></b></div>`;
   animateNums($('heroKpis'));
+  renderDeficit(p.tdee, t.kcal, isToday);
 
   $('foodList').innerHTML = d.foods.length ? d.foods.map((f, i) => `
     <li><span class="name">${esc(f.label || f.name)}</span>
@@ -59,6 +60,31 @@ export function renderToday() {
   const st = Number(S.settings.start), gl = Number(S.settings.goal);
   $('hdrProg').style.width = (S.setupDone && st > gl ? Math.max(0, Math.min(1, (st - p.w) / (st - gl))) * 100 : 0) + '%';
 }
+// 热量缺口：离目标还差多少、每天要缺多少、当天实际缺了多少
+const k = (n: number) => r0(n).toLocaleString('en-US');
+function renderDeficit(tdee: number, eaten: number, isToday: boolean) {
+  const dp = deficitPlan(today()), box = $('deficitBox');
+  $('deficitCard').hidden = !dp;
+  if (!dp) return;
+  const goal = S.settings.goal, w = r1(plan().w), dayDef = tdee - eaten;
+  $('deficitTitle').textContent = `热量缺口（${dp.goalDate.slice(5)} 到 ${goal} kg）`;
+  if (dp.remaining <= 0) {
+    box.innerHTML = `<div class="stat"><span class="muted">还差</span><b class="ok">已到目标</b></div>`;
+    $('deficitNote').textContent = ''; $('deficitBar').style.width = '100%';
+    return;
+  }
+  const over = dp.daysLeft <= 0;
+  box.innerHTML = `
+    <div class="stat"><span class="muted">还差总缺口</span><b>${k(dp.remaining)} <small>kcal</small></b><small class="muted">${w} → ${goal} kg</small></div>
+    <div class="stat"><span class="muted">每天需要缺口</span><b class="${dp.perDay > dp.maxPerDay ? 'warn' : ''}">${over ? '已到期' : `${k(dp.perDay)} <small>kcal</small>`}</b><small class="muted">${over ? dp.goalDate : `剩 ${dp.daysLeft} 天（含今天）`}</small></div>
+    <div class="stat"><span class="muted">${isToday ? '今天缺口（到目前）' : '当天缺口'}</span><b class="${dayDef < 0 ? 'bad' : ''}">${dayDef < 0 ? '超出 ' + k(-dayDef) : k(dayDef)} <small>kcal</small></b><small class="muted">消耗约 ${k(tdee)} − 吃了 ${k(eaten)}</small></div>
+    <div class="stat"><span class="muted">已完成</span><b>${k(dp.done)} <small>/ ${k(dp.total)}</small></b><small class="muted">${S.settings.start} → ${w} kg</small></div>`;
+  $('deficitBar').style.width = (dp.total ? dp.done / dp.total * 100 : 0) + '%';
+  $('deficitNote').textContent = over ? '' : dp.perDay > dp.maxPerDay
+    ? `每天缺 ${k(dp.perDay)} 等于只吃约 ${k(tdee - dp.perDay)} kcal，低于 ${plan().floor} 下限，做不到。按 ${plan().floor} 吃每天最多缺 ${k(dp.maxPerDay)}，${dp.goalDate.slice(5)} 大约到 ${r1(dp.projected)} kg。`
+    : `每天吃约 ${k(tdee - dp.perDay)} kcal 就能按时到 ${goal} kg。`;
+}
+
 const ring = (id: string) => document.getElementById(id) as unknown as SVGElement;
 export const kcalRing = () => ring('kcalRing');
 export const proteinRing = () => ring('proteinRing');
