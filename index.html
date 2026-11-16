@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="减脂记录">
-<meta name="theme-color" content="#0f172a">
+<meta name="theme-color" content="#0a0e17">
 <title>减脂记录</title>
 </head>
 <body>
 <header>
   <h1><span class="m-only">减脂记录</span><span class="d-only" id="pageTitle">今天</span></h1>
   <div class="hdr-r">
-    <span class="muted" id="hdrWeight"></span>
+    <div class="hdr-line"><span id="hdrWeight"></span><span class="hdr-days" id="hdrDays"></span></div>
     <div class="hdr-prog"><div id="hdrProg"></div></div>
   </div>
 </header>
@@ -20,44 +20,41 @@
 <main>
   <!-- 今天 -->
   <section class="tab on" id="tab-today">
-    <div class="today-bar">
-    <div class="card o2 date-card">
-      <div class="datebar">
-        <button class="ghost" id="prevDay">‹</button>
+    <div class="card o2 week-card">
+      <div class="week-h">
+        <button class="ghost icon" id="prevDay" aria-label="前一天">‹</button>
         <div class="d" id="dateLabel"></div>
-        <button class="ghost" id="nextDay">›</button>
+        <button class="ghost icon" id="nextDay" aria-label="后一天">›</button>
+        <button class="ghost small manual" id="copyDay">复制汇总</button>
       </div>
-    </div>
-    <div class="card o9 copy-card manual">
-      <button class="ghost" id="copyDay">复制今天的汇总（发给 AI 或自己看）</button>
-    </div>
-    </div>
-    <div class="card o3" id="heroCard">
-      <div class="rings">
-        <div class="ring-col">
-          <div class="ring-wrap" id="kcalWrap">
-            <svg class="ring" viewBox="0 0 120 120"><circle class="bg" cx="60" cy="60" r="52"/><circle class="fg" id="kcalRing" cx="60" cy="60" r="52"/></svg>
-            <div class="ring-center"><div class="muted">还能吃</div><div class="big" id="kcalLeft">0</div><div class="muted">kcal</div></div>
-          </div>
-          <div class="muted" id="kcalLine"></div>
-        </div>
-        <div class="ring-col">
-          <div class="ring-wrap" id="proteinWrap">
-            <svg class="ring" viewBox="0 0 120 120"><circle class="bg" cx="60" cy="60" r="52"/><circle class="fg" id="proteinRing" cx="60" cy="60" r="52" style="stroke:var(--blue)"/></svg>
-            <div class="ring-center"><div class="muted">蛋白质</div><div class="big" id="proteinNow">0</div><div class="muted" id="proteinPct">0%</div></div>
-          </div>
-          <div class="muted" id="proteinLine"></div>
-        </div>
-      </div>
-      <div class="hero-kpis" id="heroKpis"></div>
-      <div class="muted" id="dayHint"></div>
+      <div class="week" id="weekStrip"></div>
     </div>
     <div class="cols">
       <div class="col col-main">
-    <div class="card o1 agent-only" id="coachCard">
-      <h2>Claude 的点评</h2>
-      <div class="coach" id="coachText"></div>
-      <div class="muted" id="coachTime" style="margin-top:6px"></div>
+    <div class="card o3 hero" id="heroCard">
+      <div class="ring-wrap" id="kcalWrap" role="button" tabindex="0" title="点一下切换：热量 / 蛋白质">
+        <svg class="ring" viewBox="0 0 120 120">
+          <circle class="bg" cx="60" cy="60" r="52"/><circle class="fg" id="kcalRing" cx="60" cy="60" r="52" pathLength="100"/>
+          <circle class="bg in" cx="60" cy="60" r="38"/><circle class="fg in" id="proteinRing" cx="60" cy="60" r="38" pathLength="100"/>
+        </svg>
+        <div class="ring-center"><div class="rc-l" id="ringLabel">还能吃</div><div class="big" id="kcalLeft">0</div><div class="rc-u" id="ringUnit">kcal</div></div>
+        <div class="ring-anchor" id="proteinWrap"></div>
+        <span class="ring-hint">点一下切换</span>
+      </div>
+      <div class="hero-side">
+        <div class="meter k" id="kcalMeter">
+          <div class="meter-h"><span><i></i>热量</span><b id="kcalLine"></b></div>
+          <div class="meter-bar"><div class="meter-fill" id="kcalBar"></div><span class="tick" id="floorTick" title="下限"></span></div>
+          <div class="meter-s" id="kcalSub"></div>
+        </div>
+        <div class="meter p" id="proteinMeter">
+          <div class="meter-h"><span><i></i>蛋白质</span><b id="proteinLine"></b></div>
+          <div class="meter-bar"><div class="meter-fill" id="proteinBar"></div></div>
+          <div class="meter-s" id="proteinSub"></div>
+        </div>
+        <div class="hero-kpis" id="heroKpis"></div>
+      </div>
+      <div class="hint" id="dayHint"></div>
     </div>
     <div class="card o5 manual">
       <h2>添加食物</h2>
@@ -78,12 +75,23 @@
         <button class="ghost" id="addCustom" style="margin-top:8px">加到今天</button>
       </details>
     </div>
-    <div class="card o6">
-      <h2>今天吃了</h2>
-      <ul class="list" id="foodList"></ul>
+    <div class="card o6 food-card">
+      <div class="card-h">
+        <h2 id="foodTitle">今天吃了</h2>
+        <div class="seg" id="foodSort" role="tablist" aria-label="排序">
+          <button class="on" data-s="time">顺序</button><button data-s="kcal">热量</button><button data-s="protein">蛋白</button>
+        </div>
+      </div>
+      <div class="stack-w" id="foodStack"></div>
+      <ul class="list foods" id="foodList"></ul>
     </div>
       </div>
       <div class="col col-side">
+    <div class="card o1 agent-only coach-card" id="coachCard">
+      <div class="coach-h"><i class="avatar">C</i><div><b>Claude 的点评</b><div class="muted" id="coachTime"></div></div></div>
+      <div class="coach" id="coachText"></div>
+      <button class="ghost small coach-more" id="coachMore" hidden>展开全部</button>
+    </div>
     <div class="card o4" id="deficitCard">
       <h2 id="deficitTitle">热量缺口</h2>
       <div id="deficitBox"></div>
@@ -91,11 +99,12 @@
       <div id="deficitNote"></div>
       <div class="dz-foot">按 1 kg 脂肪 ≈ 7700 kcal、每天消耗约 TDEE 估算；运动不算进去。</div>
     </div>
-    <div class="card o4 agent-only">
-      <h2>最近 7 天</h2>
+    <div class="card o7 agent-only week-sum">
+      <div class="card-h"><h2>最近 7 天</h2><span class="legend"><i class="lg-t"></i>目标 <i class="lg-f"></i>下限</span></div>
+      <div class="wbars" id="weekChart"></div>
       <div class="grid2" id="weekStats"></div>
     </div>
-    <div class="card o7">
+    <div class="card o8">
       <h2>今天运动</h2>
       <ul class="list" id="exList"></ul>
       <div class="row manual" style="margin-top:8px">
@@ -121,7 +130,11 @@
     <div class="cols">
       <div class="col col-main">
     <div class="card o2">
-      <h2>趋势（点 = 每天，线 = 7 天平均）</h2>
+      <div class="card-h">
+        <h2>趋势</h2>
+        <div class="seg" id="wRange"><button class="on" data-r="goal">到目标日</button><button data-r="all">只看记录</button></div>
+      </div>
+      <div class="chart-legend"><span><i class="lg-dot"></i>每天</span><span><i class="lg-avg"></i>7 天平均</span><span id="wPlanLg"><i class="lg-plan"></i>按时到目标的路线</span></div>
       <div id="wChart"></div>
     </div>
       </div>
@@ -145,8 +158,13 @@
   <!-- 食物库 -->
   <section class="tab" id="tab-foods">
     <div class="card">
-      <h2>食物库（按标签或估算填写）</h2>
-      <ul class="list" id="libList"></ul>
+      <div class="card-h">
+        <h2>食物库</h2>
+        <div class="seg" id="libSort"><button class="on" data-s="name">默认</button><button data-s="density">蛋白密度</button><button data-s="kcal">热量</button></div>
+      </div>
+      <input class="search" id="libSearch" type="search" placeholder="搜索食物">
+      <div class="muted lib-note">条形 = 每 100 kcal 含多少克蛋白，越长越适合减脂。</div>
+      <ul class="list lib" id="libList"></ul>
     </div>
     <div class="card manual">
       <h2>新增 / 修改食物</h2>
@@ -219,6 +237,7 @@
   <button data-tab="weight"><svg viewBox="0 0 24 24"><path d="M4 18l5-6 4 3 7-9"/><path d="M15 6h5v5"/></svg>体重</button>
   <button data-tab="foods"><svg viewBox="0 0 24 24"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/></svg>食物库</button>
   <button data-tab="settings"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>设置</button>
+  <div class="side-goal" id="sideGoal"></div>
   <div class="side-foot muted"><span class="manual">数据只存在本机浏览器</span><span class="agent-only">数据由 Claude 记账</span>← → 键切换日期</div>
 </nav>
 <div class="toast" id="toast"></div>

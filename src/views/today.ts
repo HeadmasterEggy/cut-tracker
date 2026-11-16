@@ -3,27 +3,47 @@ import { S, curDate, setCurDate, day, save } from '../state';
 import { deficitPlan, plan, totals, type Totals } from '../calc';
 import { $, $in, $sel, esc, r0, r1, shift, today, toast } from '../util';
 import {
-  animateNums, applyFlash, confetti, countTo, flashBtn, floatText, numSpan, removeAnimated, retrigger,
+  RM, animateNums, applyFlash, confetti, countTo, flashBtn, floatText, numSpan, removeAnimated, retrigger,
   setFlash, setRing, shakeEl, staggerList,
 } from '../anim';
 import { renderAgent } from './agent';
 
+const PAL = ['#3ddc97', '#6ea8ff', '#b197fc', '#fbbf24', '#f472b6', '#2dd4bf', '#fb923c', '#a3e635'];
+const WK = '日一二三四五六';
+const wk = (ds: string) => '周' + WK[new Date(ds + 'T12:00:00').getDay()];
+let ringMode: 'kcal' | 'protein' = 'kcal';
+let foodSort: 'time' | 'kcal' | 'protein' = 'time';
+let openFood = -1, openDate = '';
+
 export function renderToday() {
   const p = plan(), t = totals(curDate), d = day(curDate);
   const isToday = curDate === today();
-  $('dateLabel').textContent = (isToday ? '今天 · ' : '') + curDate;
+  $('dateLabel').textContent = (isToday ? '今天 · ' : '') + curDate.slice(5).replace('-', ' 月 ') + ' 日 · ' + wk(curDate);
   $<HTMLButtonElement>('nextDay').disabled = isToday;
+  $('foodTitle').textContent = isToday ? '今天吃了' : `${curDate.slice(5)} 吃了`;
+  renderWeekStrip(p);
   const left = p.target - t.kcal;
-  countTo($('kcalLeft'), left, r0);
-  $('kcalLeft').className = 'big ' + (left < -150 ? 'bad' : left < 0 ? 'warn' : 'ok');
-  $('kcalLine').textContent = `已吃 ${r0(t.kcal)} / 目标 ${r0(p.target)} kcal`;
-  countTo($('proteinNow'), t.protein, v => r0(v) + 'g');
-  const pPct = t.protein / p.protein;
-  $('proteinPct').textContent = r0(pPct * 100) + '%';
-  $('proteinLine').textContent = `目标 ${r0(p.protein)}g`;
+  renderRing(p, t);
   setRing(ring('kcalRing'), t.kcal / p.target, left < -150 ? 'var(--bad)' : left < 0 ? 'var(--warn)' : 'var(--accent)');
+  const pPct = t.protein / p.protein;
   setRing(ring('proteinRing'), pPct, 'var(--blue)');
-  $('proteinWrap').classList.toggle('done', pPct >= 1);
+  $('kcalWrap').classList.toggle('pdone', pPct >= 1);
+
+  // 两条进度：热量（带下限刻度）、蛋白质
+  $('kcalLine').innerHTML = `${r0(t.kcal)} <small>/ ${r0(p.target)} kcal</small>`;
+  const kb = $('kcalBar');
+  kb.style.width = Math.min(100, t.kcal / p.target * 100) + '%';
+  kb.className = 'meter-fill' + (left < -150 ? ' bad' : left < 0 ? ' warn' : '');
+  $('floorTick').style.left = Math.min(100, p.floor / p.target * 100) + '%';
+  $('kcalSub').innerHTML = left >= 0
+    ? `还能吃 <b>${r0(left)}</b> kcal · 竖线是下限 ${p.floor}`
+    : `超了 <b>${r0(-left)}</b> kcal，明天正常吃就好`;
+  $('proteinLine').innerHTML = `${r0(t.protein)} <small>/ ${r0(p.protein)} g</small>`;
+  $('proteinBar').style.width = Math.min(100, pPct * 100) + '%';
+  const short = p.protein - t.protein;
+  $('proteinSub').innerHTML = short > 0
+    ? `还差 <b>${r0(short)}</b> g ≈ 熟鸡胸 ${r0(short / 31 * 100)} g`
+    : '已达标 ✓';
 
   let hint = '';
   const hour = new Date().getHours();
@@ -32,34 +52,106 @@ export function renderToday() {
   else if (left < 0) hint = '今天超了一点，没关系，明天正常吃，别饿回来。';
   $('dayHint').textContent = hint;
   // 电脑端总览里的几个数
-  const wToday = S.weights[curDate], gl0 = Number(S.settings.goal);
+  const wToday = S.weights[curDate], ratio = t.kcal ? t.protein / t.kcal * 100 : 0, goalRatio = p.protein / p.target * 100;
   $('heroKpis').innerHTML = `
-    <div class="stat"><span class="muted">已吃</span><b>${numSpan(r0(t.kcal))} <small>/ ${r0(p.target)} kcal</small></b></div>
-    <div class="stat"><span class="muted">蛋白还差</span><b>${numSpan(Math.max(0, r0(p.protein - t.protein)), 0, ' g')}</b></div>
     <div class="stat"><span class="muted">运动</span><b>${numSpan(t.exMin)} <small>分钟${t.exKcal ? ` · ${r0(t.exKcal)} kcal` : ''}</small></b></div>
-    <div class="stat"><span class="muted">${wToday ? '当天体重' : '最近体重'}</span><b>${numSpan(r1(wToday || p.w), 1)} <small>kg · 离目标 ${r1(Math.max(0, (wToday || p.w) - gl0))}</small></b></div>`;
+    <div class="stat"><span class="muted">${wToday ? '当天体重' : '最近体重'}</span><b>${numSpan(r1(wToday || p.w), 1)} <small>kg</small></b></div>
+    <div class="stat" title="目标比例 ${r1(goalRatio)} g / 100 kcal"><span class="muted">每 100 kcal 蛋白</span><b class="${!t.kcal ? '' : ratio >= goalRatio ? 'ok' : 'warn'}">${t.kcal ? numSpan(r1(ratio), 1) : '—'} <small>g · 目标 ${r1(goalRatio)}</small></b></div>`;
   animateNums($('heroKpis'));
   renderDeficit(p.tdee, t.kcal, isToday);
-
-  $('foodList').innerHTML = d.foods.length ? d.foods.map((f, i) => `
-    <li><span class="name">${esc(f.label || f.name)}</span>
-      <span class="num">${r0(f.kcal)} kcal<br><span class="muted">${r1(f.protein)}g 蛋白</span></span>
-      <button class="del" data-food="${i}" aria-label="删除">×</button></li>`).join('')
-    : '<li class="muted empty">还没记录，从上面加一条吧</li>';
+  renderFoods(p, t);
 
   $('exList').innerHTML = d.ex.length ? d.ex.map((e, i) => `
-    <li><span class="name">${esc(e.type)}</span>
-      <span class="num">${e.min || 0} 分钟${e.kcal ? ` · ${e.kcal} kcal` : ''}</span>
+    <li><span class="ex-ic">${/力量|练/.test(e.type) ? '🏋️' : /跑/.test(e.type) ? '🏃' : /骑/.test(e.type) ? '🚴' : '🚶'}</span><span class="name">${esc(e.type)}</span>
+      <span class="num">${e.min || 0} 分钟${e.kcal ? `<br><span class="muted">${e.kcal} kcal</span>` : ''}</span>
       <button class="del" data-ex="${i}" aria-label="删除">×</button></li>`).join('')
-    : '<li class="muted empty">今天还没运动</li>';
+    : `<li class="muted empty">${isToday ? '今天' : '这天'}还没运动</li>`;
   applyFlash('foodList'); applyFlash('exList');
 
   renderFoodPicker();
   renderAgent();
-  $('hdrWeight').textContent = S.setupDone ? `${r1(p.w)} kg → ${S.settings.goal} kg` : '先在设置里填身体数据';
   const st = Number(S.settings.start), gl = Number(S.settings.goal);
-  $('hdrProg').style.width = (S.setupDone && st > gl ? Math.max(0, Math.min(1, (st - p.w) / (st - gl))) * 100 : 0) + '%';
+  $('hdrWeight').textContent = S.setupDone ? `${r1(p.w)} → ${S.settings.goal} kg` : '先在设置里填身体数据';
+  const prog = S.setupDone && st > gl ? Math.max(0, Math.min(1, (st - p.w) / (st - gl))) : 0;
+  $('hdrProg').style.width = prog * 100 + '%';
+  const dp = deficitPlan(today());
+  $('hdrDays').textContent = dp && dp.daysLeft > 0 ? `剩 ${dp.daysLeft} 天` : '';
+  $('sideGoal').innerHTML = S.setupDone ? `
+    <div class="sg-h">目标 ${gl} kg${dp ? ' · ' + dp.goalDate.slice(5) : ''}</div>
+    <div class="sg-n">${r1(p.w)}<small>kg</small></div>
+    <div class="sg-bar"><i style="width:${prog * 100}%"></i></div>
+    <div class="sg-s"><span>已减 ${r1(Math.max(0, st - p.w))}</span><span>还差 ${r1(Math.max(0, p.w - gl))} kg</span></div>` : '';
 }
+
+// 中间的大数字：点一下在「还能吃 kcal」和「蛋白还差 g」之间切换
+function renderRing(p = plan(), t = totals(curDate)) {
+  const left = p.target - t.kcal, short = p.protein - t.protein, el = $('kcalLeft');
+  $('kcalWrap').dataset.mode = ringMode;
+  if (ringMode === 'kcal') {
+    $('ringLabel').textContent = left >= 0 ? '还能吃' : '超了';
+    countTo(el, Math.abs(left), r0); $('ringUnit').textContent = 'kcal';
+    el.className = 'big ' + (left < -150 ? 'bad' : left < 0 ? 'warn' : 'ok');
+  } else {
+    $('ringLabel').textContent = short > 0 ? '蛋白还差' : '蛋白已吃';
+    countTo(el, short > 0 ? short : t.protein, r0); $('ringUnit').textContent = 'g';
+    el.className = 'big ' + (short > 0 ? '' : 'ok');
+    el.style.color = short > 0 ? 'var(--blue)' : '';
+  }
+  if (ringMode === 'kcal') el.style.color = '';
+}
+
+// 一周日期条：每天一个小环（吃了多少 / 目标），点了跳到那天
+function renderWeekStrip(p: ReturnType<typeof plan>) {
+  const t0 = today();
+  let end = shift(curDate, 3); if (end > t0) end = t0;
+  $('weekStrip').innerHTML = [...Array(7)].map((_, i) => {
+    const ds = shift(end, i - 6), t = totals(ds), has = !!S.days[ds]?.foods.length;
+    const c = !has ? 'transparent' : t.kcal > p.target + 150 ? 'var(--bad)' : t.kcal > p.target || (ds < t0 && t.kcal < p.floor) ? 'var(--warn)' : 'var(--accent)';
+    const off = 100 - Math.min(1, t.kcal / p.target) * 100;
+    return `<button class="wd${ds === curDate ? ' on' : ''}${ds === t0 ? ' is-today' : ''}" data-d="${ds}" title="${ds} · ${has ? r0(t.kcal) + ' kcal · 蛋白 ' + r0(t.protein) + ' g' : '没记录'}">
+      <span>${ds === t0 ? '今天' : wk(ds)}<b>${Number(ds.slice(8))}</b></span>
+      <svg viewBox="0 0 30 30"><circle class="wbg" cx="15" cy="15" r="12"/><circle class="wfg" cx="15" cy="15" r="12" pathLength="100" style="stroke:${c};stroke-dashoffset:${off}"/></svg></button>`;
+  }).join('');
+}
+
+// 吃了什么：上面一条按热量占比的组成条，下面每条可展开看占比和蛋白密度
+function renderFoods(p: ReturnType<typeof plan>, t: Totals) {
+  const d = day(curDate);
+  if (openDate !== curDate) { openFood = -1; openDate = curDate; }
+  const items = d.foods.map((f, i) => ({ f, i, c: PAL[i % PAL.length] }));
+  if (foodSort === 'kcal') items.sort((a, b) => b.f.kcal - a.f.kcal);
+  if (foodSort === 'protein') items.sort((a, b) => b.f.protein - a.f.protein);
+  document.querySelectorAll('#foodSort button').forEach(b => b.classList.toggle('on', (b as HTMLElement).dataset.s === foodSort));
+  const scale = Math.max(p.target, t.kcal), goalRatio = p.protein / p.target * 100;
+  $('foodStack').innerHTML = items.length ? `<div class="stack">${items.map(({ f, i, c }, n) =>
+    `<i data-i="${i}" style="--c:${c};--i:${n};width:${f.kcal / scale * 100}%" title="${esc(f.label || f.name)} · ${r0(f.kcal)} kcal"></i>`).join('')}${t.kcal < p.target ? '<i class="rest"></i>' : ''}</div>
+    <div class="stack-cap"><span>按热量占比${t.kcal < p.target ? '，斜纹是还能吃的' : ''} · 点一条看详情</span><span>${r0(t.kcal)} / ${r0(p.target)} kcal</span></div>` : '';
+  $('foodList').innerHTML = items.length ? items.map(({ f, i, c }) => {
+    const dens = f.kcal ? f.protein / f.kcal * 100 : 0, lib = S.foods.find(x => x.name === f.name);
+    const verdict = !f.kcal ? '' : dens >= goalRatio ? `高于目标比例 ${r1(goalRatio)} g，多吃这类` : dens >= goalRatio / 2 ? `低于目标比例 ${r1(goalRatio)} g，搭配高蛋白的吃` : `主要是热量，蛋白很少（目标比例 ${r1(goalRatio)} g）`;
+    return `<li data-i="${i}" style="--c:${c}" class="${openFood === i ? 'open' : ''}">
+      <button class="fi" aria-expanded="${openFood === i}"><i class="sw"></i><span class="name">${esc(f.label || f.name)}</span>
+        <span class="num">${r0(f.kcal)} kcal<small>${r1(f.protein)} g 蛋白</small></span>
+        <svg class="chev" viewBox="0 0 16 16"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div class="fd"><div><div class="fd-in">
+        <div><span>占当天热量</span><b>${t.kcal ? r0(f.kcal / t.kcal * 100) : 0}<small>%</small></b></div>
+        <div><span>占蛋白目标</span><b>${r0(f.protein / p.protein * 100)}<small>%</small></b></div>
+        <div><span>每 100 kcal 蛋白</span><b class="${dens >= goalRatio ? 'ok' : dens >= goalRatio / 2 ? '' : 'warn'}">${r1(dens)}<small>g</small></b></div>
+        <div class="fd-note">${verdict}${lib ? `<br>食物库：每 ${lib.per}${esc(lib.unit)} ${lib.kcal} kcal · ${lib.protein} g 蛋白` : ''}</div>
+      </div></div></div>
+      <button class="del" data-food="${i}" aria-label="删除">×</button></li>`;
+  }).join('')
+    : `<li class="muted empty">${curDate === today() ? '今天还没记录' : '这天没有记录'}</li>`;
+}
+
+export function selectDay(ds: string) {
+  if (ds === curDate || ds > today()) return;
+  const n = ds < curDate ? -1 : 1;
+  setCurDate(ds); renderToday();
+  retrigger($('dateLabel'), n < 0 ? 'slide-l' : 'slide-r');
+  staggerList($('foodList')); staggerList($('exList'));
+}
+
 // 热量缺口：离目标还差多少、每天要缺多少、当天实际缺了多少
 const k = (n: number) => r0(n).toLocaleString('en-US');
 function renderDeficit(tdee: number, eaten: number, isToday: boolean) {
@@ -182,6 +274,8 @@ export function initToday() {
     afterAdd(kcal, protein, before);
   };
   $('foodList').onclick = e => {
+    const fi = (e.target as Element).closest<HTMLElement>('.fi');
+    if (fi) { toggleFood(Number(fi.closest<HTMLElement>('li')!.dataset.i)); return; }
     const b = (e.target as Element).closest<HTMLElement>('[data-food]'); if (!b) return;
     const i = Number(b.dataset.food), dd = day(curDate);
     removeAnimated(b.closest('li'), () => {
@@ -209,12 +303,47 @@ export function initToday() {
       } });
     });
   };
+  $('weekStrip').onclick = e => {
+    const b = (e.target as Element).closest<HTMLElement>('[data-d]'); if (b) selectDay(b.dataset.d!);
+  };
+  const flip = () => {
+    ringMode = ringMode === 'kcal' ? 'protein' : 'kcal'; renderRing();
+    retrigger(document.querySelector('#kcalWrap .ring-center')!, 'swap');
+  };
+  $('kcalWrap').onclick = flip;
+  $('kcalWrap').onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); } };
+  $('foodSort').onclick = e => {
+    const b = (e.target as Element).closest<HTMLElement>('[data-s]'); if (!b || b.dataset.s === foodSort) return;
+    foodSort = b.dataset.s as typeof foodSort; renderFoods(plan(), totals(curDate)); staggerList($('foodList'));
+  };
+  // 组成条和列表互相高亮
+  const card = $('foodList').closest<HTMLElement>('.card')!;
+  const hl = (i: string | null) => {
+    card.classList.toggle('hl', i !== null);
+    card.querySelectorAll('[data-i]').forEach(el => el.classList.toggle('cur', (el as HTMLElement).dataset.i === i));
+  };
+  card.addEventListener('pointerover', e => {
+    if ((e as PointerEvent).pointerType !== 'mouse') return;
+    const el = (e.target as Element).closest<HTMLElement>('[data-i]'); hl(el ? el.dataset.i! : null);
+  });
+  card.addEventListener('pointerleave', () => hl(null));
+  const toggleFood = (i: number, scroll = false) => {
+    const li = $('foodList').querySelector<HTMLElement>(`li[data-i="${i}"]`); if (!li) return;
+    const open = !li.classList.contains('open');
+    $('foodList').querySelectorAll('li.open').forEach(x => { x.classList.remove('open'); x.querySelector('.fi')?.setAttribute('aria-expanded', 'false'); });
+    li.classList.toggle('open', open); li.querySelector('.fi')!.setAttribute('aria-expanded', String(open));
+    openFood = open ? i : -1;
+    if (scroll && open) setTimeout(() => li.scrollIntoView({ behavior: RM ? 'auto' : 'smooth', block: 'nearest' }), 120);
+  };
+  $('foodStack').onclick = e => {
+    const el = (e.target as Element).closest<HTMLElement>('[data-i]'); if (el) toggleFood(Number(el.dataset.i), true);
+  };
   $('prevDay').onclick = () => goDay(-1);
   $('nextDay').onclick = () => goDay(1);
   // 在日期 / 进度环卡片上左右滑动切换日期
   let sx = 0, sy = 0, on = false;
-  ['heroCard', 'dateLabel'].forEach(id => {
-    const el = id === 'dateLabel' ? $(id).closest<HTMLElement>('.card')! : $(id);
+  ['heroCard', 'weekStrip'].forEach(id => {
+    const el = $(id);
     el.addEventListener('touchstart', e => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; on = true; }, { passive: true });
     el.addEventListener('touchend', e => {
       if (!on) return; on = false;

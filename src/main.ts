@@ -8,7 +8,7 @@ import { initWeight } from './views/weight';
 import { initFoods } from './views/foods';
 import { initSettings } from './views/settings';
 import { initBackup } from './views/backup';
-import { loadRemote } from './views/agent';
+import { initAgent, loadRemote } from './views/agent';
 
 initGlobalEffects();
 initToday();
@@ -16,6 +16,7 @@ initWeight();
 initFoods();
 initSettings();
 initBackup();
+initAgent();
 
 // ---------- 导航 ----------
 // 导航指示块跟随当前按钮（手机底栏 / 电脑侧栏通用）
