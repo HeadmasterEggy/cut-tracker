@@ -5,7 +5,8 @@ type Anim = { _v?: number; _raf?: number; _init?: boolean; _off?: number; _txt?:
 const A = <T extends Element>(el: T) => el as T & Anim;
 
 export const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const RING_C = 2 * Math.PI * 52;
+// 环形用 pathLength="100"，周长按 100 算
+const RING_C = 100;
 const ease = (t: number) => 1 - Math.pow(1 - t, 3);
 
 export function countTo(node: HTMLElement, to: number, fmt: (v: number) => string | number, dur = 700) {

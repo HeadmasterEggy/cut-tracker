@@ -5,16 +5,37 @@ import { RM, applyFlash, flashBtn, removeAnimated, retrigger, setFlash, shakeEl 
 import { renderFoodPicker } from './today';
 import type { LibFood } from '../types';
 
+let libSort: 'name' | 'density' | 'kcal' = 'name';
+const dens = (f: LibFood) => f.kcal ? f.protein / f.kcal * 100 : 0;
+// 搜索词高亮
+function hlName(name: string, q: string) {
+  if (!q) return esc(name);
+  return name.split(q).map(esc).join(`<mark>${esc(q)}</mark>`);
+}
+
 export function renderLib() {
-  $('libList').innerHTML = S.foods.map((f, i) => `
-    <li><span class="name" data-edit="${i}" style="cursor:pointer">${esc(f.name)}<br>
-      <span class="muted">每 ${f.per}${f.unit}</span></span>
+  const q = $in('libSearch').value.trim();
+  let items = S.foods.map((f, i) => ({ f, i }));
+  if (q) items = items.filter(({ f }) => f.name.toLowerCase().includes(q.toLowerCase()));
+  if (libSort === 'density') items.sort((a, b) => dens(b.f) - dens(a.f));
+  if (libSort === 'kcal') items.sort((a, b) => b.f.kcal / b.f.per - a.f.kcal / a.f.per);
+  $('libList').innerHTML = items.map(({ f, i }) => `
+    <li><span class="name" data-edit="${i}" style="cursor:pointer"><b>${hlName(f.name, q)}</b><br>
+      <span class="muted">每 ${f.per}${esc(f.unit)} · 每 100 kcal 含 ${Math.round(dens(f) * 10) / 10} g 蛋白</span>
+      <span class="dens"><i style="width:${Math.min(100, dens(f) / 20 * 100)}%"></i></span></span>
       <span class="num">${f.kcal} kcal<br><span class="muted">${f.protein}g 蛋白</span></span>
-      <button class="del" data-lib="${i}" aria-label="删除">×</button></li>`).join('');
+      <button class="del" data-lib="${i}" aria-label="删除">×</button></li>`).join('') || '<li class="muted empty">没找到</li>';
   applyFlash('libList');
 }
 
 export function initFoods() {
+  $in('libSearch').oninput = () => renderLib();
+  $('libSort').onclick = e => {
+    const b = (e.target as Element).closest<HTMLElement>('[data-s]'); if (!b || b.dataset.s === libSort) return;
+    libSort = b.dataset.s as typeof libSort;
+    $('libSort').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+    renderLib();
+  };
   $('libList').onclick = e => {
     const b = (e.target as Element).closest<HTMLElement>('[data-lib]');
     if (b) {
