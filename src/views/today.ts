@@ -1,6 +1,6 @@
 // 「今天」页：进度环、吃了什么、运动、日期切换
 import { S, curDate, setCurDate, day, save } from '../state';
-import { deficitPlan, plan, totals, type Totals } from '../calc';
+import { deficitPlan, macros, plan, totals, type Totals } from '../calc';
 import { $, $in, $sel, esc, r0, r1, shift, today, toast } from '../util';
 import {
   RM, animateNums, applyFlash, confetti, countTo, flashBtn, floatText, numSpan, removeAnimated, retrigger,
@@ -44,6 +44,16 @@ export function renderToday() {
   $('proteinSub').innerHTML = short > 0
     ? `还差 <b>${r0(short)}</b> g ≈ 熟鸡胸 ${r0(short / 31 * 100)} g`
     : '已达标 ✓';
+
+  // 每天能吃的三大营养素（目标）。记录里只有热量和蛋白，碳水、脂肪只显示目标
+  const m = macros(p);
+  $('macroBox').innerHTML = `
+    <div class="mc-h">每天可以吃 <small>按 ${r0(p.target)} kcal</small></div>
+    <div class="mc-row">
+      <div class="mc p"><span>蛋白质</span><b>${r0(m.protein)}<small> g</small></b><em>${r0(m.protein * 4)} kcal</em></div>
+      <div class="mc c"><span>碳水</span><b>${r0(m.carbs)}<small> g</small></b><em>${r0(m.carbs * 4)} kcal</em></div>
+      <div class="mc f"><span>脂肪</span><b>${r0(m.fat)}<small> g</small></b><em>${r0(m.fat * 9)} kcal</em></div>
+    </div>`;
 
   let hint = '';
   const hour = new Date().getHours();
