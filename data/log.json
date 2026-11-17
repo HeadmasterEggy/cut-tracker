@@ -122,6 +122,13 @@
    "unit": "份",
    "kcal": 392.0,
    "protein": 20.0
+  },
+  {
+   "name": "Monster Ultra 无糖 500ml",
+   "per": 1.0,
+   "unit": "罐",
+   "kcal": 14.0,
+   "protein": 0.0
   }
  ],
  "days": {
@@ -338,6 +345,12 @@
      "label": "兰州牛肉拌面 大碗（估：面约 350g + 牛肉约 120g + 油和酱）",
      "kcal": 1000.0,
      "protein": 48.0
+    },
+    {
+     "name": "Monster Ultra 无糖 500ml",
+     "label": "Monster Ultra 无糖 500ml 1罐",
+     "kcal": 14.0,
+     "protein": 0.0
     }
    ],
    "ex": []
