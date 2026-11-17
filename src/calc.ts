@@ -19,6 +19,16 @@ export function plan(): Plan {
   return { w, bmr, tdee, target, floor, clamped: raw < floor, protein: w * Number(s.protK) };
 }
 
+export interface Macros { protein: number; fat: number; carbs: number }
+
+/** 每天三大营养素目标：蛋白按设置的 g/kg，脂肪 0.8 g/kg 体重，剩下的热量给碳水 */
+export const FAT_PER_KG = 0.8;
+export function macros(p: Plan): Macros {
+  const fat = p.w * FAT_PER_KG;
+  const carbs = Math.max(0, (p.target - p.protein * 4 - fat * 9) / 4);
+  return { protein: p.protein, fat, carbs };
+}
+
 export interface Totals { kcal: number; protein: number; exMin: number; exKcal: number }
 
 export function totals(ds: string): Totals {
