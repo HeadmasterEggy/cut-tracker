@@ -115,6 +115,13 @@
    "unit": "份",
    "kcal": 690,
    "protein": 40
+  },
+  {
+   "name": "Super Nature Wellness Bowl 沙爹鸡 350g",
+   "per": 1.0,
+   "unit": "份",
+   "kcal": 392.0,
+   "protein": 20.0
   }
  ],
  "days": {
@@ -309,10 +316,10 @@
      "protein": 15.4
     },
     {
-     "name": "Super Nature Super Protein Wellness Bowl 沙爹鸡 350g（蛋白估）",
-     "label": "Super Nature Super Protein Wellness Bowl 沙爹鸡 350g（蛋白估）",
-     "kcal": 392.0,
-     "protein": 28.0
+     "name": "Super Nature Wellness Bowl 沙爹鸡 350g",
+     "label": "Super Nature Wellness Bowl 沙爹鸡 350g 1份",
+     "kcal": 392,
+     "protein": 20
     },
     {
      "name": "鸡蛋",
@@ -339,6 +346,6 @@
  "setupDone": true,
  "coach": {
   "updated": "2026-11-17T13:21+11:00",
-  "text": "11-17：体重 88.8（上完厕所称），7 天平均 88.6，单天波动正常。\n早餐：一杯全脂奶 + 沙爹鸡 Wellness Bowl + 2 个鸡蛋 + 15g 坚果，约 914 kcal / 59g 蛋白。还剩约 1030 kcal，蛋白差 100g。\n午饭、晚饭都要以肉为主：各 200–250g 鸡胸或牛肉 + 蔬菜，主食少放。今天不再喝牛奶。"
+  "text": "11-17：体重 88.8（上完厕所称），7 天平均 88.6，单天波动正常。\n早餐：一杯全脂奶 + 沙爹鸡 Wellness Bowl + 2 个鸡蛋 + 15g 坚果，约 914 kcal / 51g 蛋白。还剩约 1030 kcal，蛋白差 109g。\n午饭、晚饭都要以肉为主：各 200–250g 鸡胸或牛肉 + 蔬菜，主食少放。今天不再喝牛奶。"
  }
 }
