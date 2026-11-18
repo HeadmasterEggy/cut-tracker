@@ -375,6 +375,12 @@
      "label": "鸡蛋 3个",
      "kcal": 210.0,
      "protein": 18.9
+    },
+    {
+     "name": "Super Nature Wellness Bowl 鸡肉 Pad Thai 350g",
+     "label": "Super Nature Wellness Bowl 鸡肉 Pad Thai 350g 1份",
+     "kcal": 260.0,
+     "protein": 12.6
     }
    ],
    "ex": []
@@ -389,6 +395,6 @@
  "setupDone": true,
  "coach": {
   "updated": "2026-11-18T14:45+11:00",
-  "text": "11-18：起床吃了一杯全脂奶 + 3 个鸡蛋，约 505 kcal / 34g 蛋白。还剩约 1440 kcal，蛋白差 126g。\n接下来两顿都要以肉为主：各 200–250g 鸡胸或牛肉 + 蔬菜。Pad Thai 碗蛋白只有 13g，吃的话旁边加 150g 鸡胸。"
+  "text": "11-18：起床一杯全脂奶 + 3 个鸡蛋 + Pad Thai 碗，约 765 kcal / 47g 蛋白。还剩约 1180 kcal，蛋白差 113g。\n接下来两顿都要以肉为主：各 250g 左右鸡胸或牛肉 + 蔬菜，主食少放，今天别再喝奶。"
  }
 }
