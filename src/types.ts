@@ -15,13 +15,15 @@ export interface Settings {
   goalDate?: string; // YYYY-MM-DD
 }
 
-/** 食物库里的一项：每 per 个 unit 有多少 kcal / 蛋白 */
+/** 食物库里的一项：每 per 个 unit 有多少 kcal / 蛋白（脂肪、碳水是后加的，旧条目可能没有） */
 export interface LibFood {
   name: string;
   per: number;
   unit: string;
   kcal: number;
   protein: number;
+  fat?: number;
+  carbs?: number;
 }
 
 /** 某天吃的一条 */
@@ -30,6 +32,8 @@ export interface FoodEntry {
   label?: string;
   kcal: number;
   protein: number;
+  fat?: number; // g，没记就是 undefined
+  carbs?: number; // g
 }
 
 export interface Exercise {

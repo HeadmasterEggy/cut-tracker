@@ -29,13 +29,16 @@ export function macros(p: Plan): Macros {
   return { protein: p.protein, fat, carbs };
 }
 
-export interface Totals { kcal: number; protein: number; exMin: number; exKcal: number }
+export interface Totals { kcal: number; protein: number; fat: number; carbs: number; noMacro: number; exMin: number; exKcal: number }
 
 export function totals(ds: string): Totals {
   const d = S.days[ds] || { foods: [], ex: [] };
   return {
     kcal: d.foods.reduce((a, f) => a + f.kcal, 0),
     protein: d.foods.reduce((a, f) => a + f.protein, 0),
+    fat: d.foods.reduce((a, f) => a + (f.fat ?? 0), 0),
+    carbs: d.foods.reduce((a, f) => a + (f.carbs ?? 0), 0),
+    noMacro: d.foods.filter(f => f.fat == null || f.carbs == null).length, // 没记脂肪/碳水的条数
     exMin: d.ex.reduce((a, e) => a + (Number(e.min) || 0), 0),
     exKcal: d.ex.reduce((a, e) => a + (Number(e.kcal) || 0), 0),
   };

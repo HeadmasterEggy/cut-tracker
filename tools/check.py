@@ -35,6 +35,22 @@ def check_num(where, v, lo, hi):
         err(where, f"{v} 不在合理范围 {lo}–{hi}")
 
 
+def check_macros(where, f, hi):
+    """脂肪、碳水可以都没有（旧数据），有就两个都要有，而且和热量对得上。"""
+    has = [k for k in ("fat", "carbs") if k in f]
+    if not has:
+        return
+    if len(has) == 1:
+        err(where, f"只有 {has[0]}，脂肪和碳水要一起写（tools/log.py macros ... 脂肪 碳水）")
+        return
+    check_num(f"{where}.fat", f["fat"], 0, hi)
+    check_num(f"{where}.carbs", f["carbs"], 0, hi * 2)
+    if all(is_num(f.get(k)) for k in ("kcal", "protein", "fat", "carbs")):
+        est = f["protein"] * 4 + f["fat"] * 9 + f["carbs"] * 4
+        if f["kcal"] > 50 and abs(est - f["kcal"]) > max(60, f["kcal"] * 0.25):
+            err(where, f"蛋白×4 + 脂肪×9 + 碳水×4 = {est:.0f} kcal，和记的 {f['kcal']:.0f} kcal 差太多，多半是脂肪/碳水写反或打错")
+
+
 def check_log():
     path = ROOT / "data" / "log.json"
     if not path.exists():
@@ -89,6 +105,7 @@ def check_log():
             err(w, "缺少 unit")
         check_num(f"{w}.kcal", f.get("kcal"), 0, 2000)
         check_num(f"{w}.protein", f.get("protein"), 0, 200)
+        check_macros(w, f, 200)
 
     days = d.get("days", {})
     if not isinstance(days, dict):
@@ -110,6 +127,7 @@ def check_log():
                 err(fw, "缺少 name/label，网页上会显示成空白")
             check_num(f"{fw}.kcal", f.get("kcal"), 0, 5000)
             check_num(f"{fw}.protein", f.get("protein"), 0, 400)
+            check_macros(fw, f, 500)
         for j, e in enumerate(x.get("ex", []), 1):
             ew = f"{w}.ex 第 {j} 条"
             if not isinstance(e, dict):
