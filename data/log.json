@@ -16,140 +16,180 @@
    "per": 100,
    "unit": "g",
    "kcal": 165,
-   "protein": 31
+   "protein": 31,
+   "fat": 3.6,
+   "carbs": 0.0
   },
   {
    "name": "牛肉（熟，带点肥）",
    "per": 100,
    "unit": "g",
    "kcal": 220,
-   "protein": 27
+   "protein": 27,
+   "fat": 12.0,
+   "carbs": 0.0
   },
   {
    "name": "米饭（熟）",
    "per": 100,
    "unit": "g",
    "kcal": 130,
-   "protein": 2.7
+   "protein": 2.7,
+   "fat": 0.3,
+   "carbs": 28.7
   },
   {
    "name": "西兰花",
    "per": 100,
    "unit": "g",
    "kcal": 34,
-   "protein": 2.8
+   "protein": 2.8,
+   "fat": 0.4,
+   "carbs": 7.0
   },
   {
    "name": "鸡蛋",
    "per": 1,
    "unit": "个",
    "kcal": 70,
-   "protein": 6.3
+   "protein": 6.3,
+   "fat": 4.8,
+   "carbs": 0.4
   },
   {
    "name": "全脂奶",
    "per": 100,
    "unit": "ml",
    "kcal": 65,
-   "protein": 3.4
+   "protein": 3.4,
+   "fat": 3.4,
+   "carbs": 4.8
   },
   {
    "name": "低脂奶",
    "per": 100,
    "unit": "ml",
    "kcal": 45,
-   "protein": 3.6
+   "protein": 3.6,
+   "fat": 1.2,
+   "carbs": 5.0
   },
   {
    "name": "Just Right 麦片",
    "per": 100,
    "unit": "g",
    "kcal": 363,
-   "protein": 8.1
+   "protein": 8.1,
+   "fat": 2.5,
+   "carbs": 74.0
   },
   {
    "name": "腰果 / 混合坚果",
    "per": 100,
    "unit": "g",
    "kcal": 580,
-   "protein": 18
+   "protein": 18,
+   "fat": 48.0,
+   "carbs": 20.0
   },
   {
    "name": "草莓",
    "per": 100,
    "unit": "g",
    "kcal": 32,
-   "protein": 0.7
+   "protein": 0.7,
+   "fat": 0.3,
+   "carbs": 7.0
   },
   {
    "name": "Lean Cuisine 鸡肉意面",
    "per": 1,
    "unit": "份",
    "kcal": 340,
-   "protein": 20
+   "protein": 20,
+   "fat": 8.0,
+   "carbs": 45.0
   },
   {
    "name": "无糖希腊酸奶",
    "per": 100,
    "unit": "g",
    "kcal": 95,
-   "protein": 9
+   "protein": 9,
+   "fat": 5.0,
+   "carbs": 3.5
   },
   {
    "name": "燕麦片（rolled oats）",
    "per": 100,
    "unit": "g",
    "kcal": 375,
-   "protein": 12
+   "protein": 12,
+   "fat": 7.0,
+   "carbs": 62.0
   },
   {
    "name": "Market Lane 果干坚果",
    "per": 100,
    "unit": "g",
    "kcal": 499,
-   "protein": 8.2
+   "protein": 8.2,
+   "fat": 25.0,
+   "carbs": 58.0
   },
   {
    "name": "GYG 牛腩 burrito（去芝士、糙米）",
    "per": 1,
    "unit": "份",
    "kcal": 690,
-   "protein": 40
+   "protein": 40,
+   "fat": 25.0,
+   "carbs": 75.0
   },
   {
    "name": "Super Nature Wellness Bowl 沙爹鸡 350g",
    "per": 1.0,
    "unit": "份",
    "kcal": 392.0,
-   "protein": 20.0
+   "protein": 20.0,
+   "fat": 18.0,
+   "carbs": 36.0
   },
   {
    "name": "Monster Ultra 无糖 500ml",
    "per": 1.0,
    "unit": "罐",
    "kcal": 14.0,
-   "protein": 0.0
+   "protein": 0.0,
+   "fat": 0.0,
+   "carbs": 3.5
   },
   {
    "name": "Super Nature Wellness Bowl 鸡肉 Pad Thai 350g",
    "per": 1.0,
    "unit": "份",
    "kcal": 260.0,
-   "protein": 12.6
+   "protein": 12.6,
+   "fat": 6.0,
+   "carbs": 37.0
   },
   {
    "name": "鸡腿肉（熟，去皮）",
    "per": 100.0,
    "unit": "g",
    "kcal": 200.0,
-   "protein": 26.0
+   "protein": 26.0,
+   "fat": 10.5,
+   "carbs": 0.0
   },
   {
    "name": "Fitness Outcomes 是拉差鸡肉西兰花饭 350g",
    "per": 1.0,
    "unit": "份",
    "kcal": 337.0,
-   "protein": 28.4
+   "protein": 28.4,
+   "fat": 8.1,
+   "carbs": 37.8
   }
  ],
  "days": {
@@ -159,37 +199,49 @@
      "name": "米饭（熟）",
      "label": "米饭（熟） 200g",
      "kcal": 260.0,
-     "protein": 5.4
+     "protein": 5.4,
+     "fat": 0.6,
+     "carbs": 57.4
     },
     {
      "name": "鸡胸肉（熟）",
      "label": "鸡胸肉（熟） 150g",
      "kcal": 247.5,
-     "protein": 46.5
+     "protein": 46.5,
+     "fat": 5.4,
+     "carbs": 0.0
     },
     {
      "name": "西兰花",
      "label": "西兰花 150g",
      "kcal": 51.0,
-     "protein": 4.2
+     "protein": 4.2,
+     "fat": 0.6,
+     "carbs": 10.5
     },
     {
      "name": "牛肉（熟，带点肥）",
      "label": "牛肉（熟，带点肥） 150g",
      "kcal": 330.0,
-     "protein": 40.5
+     "protein": 40.5,
+     "fat": 18.0,
+     "carbs": 0.0
     },
     {
      "name": "腰果 / 混合坚果",
      "label": "腰果 / 混合坚果 20g",
      "kcal": 116.0,
-     "protein": 3.6
+     "protein": 3.6,
+     "fat": 9.6,
+     "carbs": 4.0
     },
     {
      "name": "草莓",
      "label": "草莓 250g",
      "kcal": 80.0,
-     "protein": 1.8
+     "protein": 1.8,
+     "fat": 0.8,
+     "carbs": 17.5
     }
    ],
    "ex": []
@@ -200,49 +252,65 @@
      "name": "Just Right 麦片",
      "label": "Just Right 麦片 40g",
      "kcal": 145.2,
-     "protein": 3.2
+     "protein": 3.2,
+     "fat": 1.0,
+     "carbs": 29.6
     },
     {
      "name": "腰果 / 混合坚果",
      "label": "腰果 / 混合坚果 10g",
      "kcal": 58.0,
-     "protein": 1.8
+     "protein": 1.8,
+     "fat": 4.8,
+     "carbs": 2.0
     },
     {
      "name": "全脂奶",
      "label": "全脂奶 300ml",
      "kcal": 195.0,
-     "protein": 10.2
+     "protein": 10.2,
+     "fat": 10.2,
+     "carbs": 14.4
     },
     {
      "name": "鸡蛋",
      "label": "鸡蛋 3个",
      "kcal": 210.0,
-     "protein": 18.9
+     "protein": 18.9,
+     "fat": 14.4,
+     "carbs": 1.2
     },
     {
      "name": "Lean Cuisine 鸡肉意面",
      "label": "Lean Cuisine 鸡肉意面 1份",
      "kcal": 340.0,
-     "protein": 20.0
+     "protein": 20.0,
+     "fat": 8.0,
+     "carbs": 45.0
     },
     {
      "name": "牛肉（熟，带点肥）",
      "label": "牛肉（熟，带点肥） 150g",
      "kcal": 330.0,
-     "protein": 40.5
+     "protein": 40.5,
+     "fat": 18.0,
+     "carbs": 0.0
     },
     {
      "name": "草莓",
      "label": "草莓 250g",
      "kcal": 80.0,
-     "protein": 1.8
+     "protein": 1.8,
+     "fat": 0.8,
+     "carbs": 17.5
     },
     {
      "name": "牛肉（熟，带点肥）",
      "label": "牛肉（熟，带点肥） 150g",
      "kcal": 330.0,
-     "protein": 40.5
+     "protein": 40.5,
+     "fat": 18.0,
+     "carbs": 0.0
     }
    ],
    "ex": [
@@ -259,31 +327,41 @@
      "name": "全脂奶",
      "label": "全脂奶 300ml",
      "kcal": 195.0,
-     "protein": 10.2
+     "protein": 10.2,
+     "fat": 10.2,
+     "carbs": 14.4
     },
     {
      "name": "Market Lane 果干坚果",
      "label": "Market Lane 果干坚果 30g",
      "kcal": 149.7,
-     "protein": 2.5
+     "protein": 2.5,
+     "fat": 7.5,
+     "carbs": 17.4
     },
     {
      "name": "牛肉（熟，带点肥）",
      "label": "牛肉（熟，带点肥） 200g",
      "kcal": 440.0,
-     "protein": 54.0
+     "protein": 54.0,
+     "fat": 24.0,
+     "carbs": 0.0
     },
     {
      "name": "Healthy 千层面（估，待看营养表）",
      "label": "Healthy 包装千层面一盒（估）",
      "kcal": 400,
-     "protein": 18
+     "protein": 18,
+     "fat": 12.0,
+     "carbs": 54.0
     },
     {
      "name": "GYG 牛腩 burrito（去芝士、糙米）",
      "label": "GYG 牛腩 burrito（去芝士、糙米） 1份",
      "kcal": 690.0,
-     "protein": 40.0
+     "protein": 40.0,
+     "fat": 25.0,
+     "carbs": 75.0
     }
    ],
    "ex": [
@@ -300,37 +378,49 @@
      "name": "全脂奶",
      "label": "全脂奶 468g（约 454ml）",
      "kcal": 295.0,
-     "protein": 15.4
+     "protein": 15.4,
+     "fat": 15.4,
+     "carbs": 21.8
     },
     {
      "name": "牛肉（熟，带点肥）",
      "label": "牛肉（熟，带点肥） 160g",
      "kcal": 352.0,
-     "protein": 43.2
+     "protein": 43.2,
+     "fat": 19.2,
+     "carbs": 0.0
     },
     {
      "name": "Healthy 千层面（估，待看营养表）",
      "label": "Healthy 包装千层面一盒（估）",
      "kcal": 400,
-     "protein": 18
+     "protein": 18,
+     "fat": 12.0,
+     "carbs": 54.0
     },
     {
      "name": "草莓",
      "label": "草莓 250g",
      "kcal": 80.0,
-     "protein": 1.8
+     "protein": 1.8,
+     "fat": 0.8,
+     "carbs": 17.5
     },
     {
      "name": "Super Nature Wellness Bowl 墨西哥鸡肉 350g（蛋白估）",
      "label": "Super Nature Wellness Bowl 墨西哥鸡肉 350g（蛋白估）",
      "kcal": 277.0,
-     "protein": 20.0
+     "protein": 20.0,
+     "fat": 8.0,
+     "carbs": 30.0
     },
     {
      "name": "全脂奶",
      "label": "全脂奶 468g（约 454ml）",
      "kcal": 295.0,
-     "protein": 15.4
+     "protein": 15.4,
+     "fat": 15.4,
+     "carbs": 21.8
     }
    ],
    "ex": []
@@ -341,37 +431,49 @@
      "name": "全脂奶",
      "label": "全脂奶 468g（约 454ml）",
      "kcal": 295.0,
-     "protein": 15.4
+     "protein": 15.4,
+     "fat": 15.4,
+     "carbs": 21.8
     },
     {
      "name": "Super Nature Wellness Bowl 沙爹鸡 350g",
      "label": "Super Nature Wellness Bowl 沙爹鸡 350g 1份",
      "kcal": 392,
-     "protein": 20
+     "protein": 20,
+     "fat": 18.0,
+     "carbs": 36.0
     },
     {
      "name": "鸡蛋",
      "label": "鸡蛋 2个",
      "kcal": 140.0,
-     "protein": 12.6
+     "protein": 12.6,
+     "fat": 9.6,
+     "carbs": 0.8
     },
     {
      "name": "腰果 / 混合坚果",
      "label": "腰果 / 混合坚果 15g",
      "kcal": 87.0,
-     "protein": 2.7
+     "protein": 2.7,
+     "fat": 7.2,
+     "carbs": 3.0
     },
     {
      "name": "兰州牛肉拌面 大碗（估：面约 350g + 牛肉约 120g + 油和酱）",
      "label": "兰州牛肉拌面 大碗（估：面约 350g + 牛肉约 120g + 油和酱）",
      "kcal": 1000.0,
-     "protein": 48.0
+     "protein": 48.0,
+     "fat": 35.0,
+     "carbs": 120.0
     },
     {
      "name": "Monster Ultra 无糖 500ml",
      "label": "Monster Ultra 无糖 500ml 1罐",
      "kcal": 14.0,
-     "protein": 0.0
+     "protein": 0.0,
+     "fat": 0.0,
+     "carbs": 3.5
     }
    ],
    "ex": []
@@ -382,37 +484,49 @@
      "name": "全脂奶",
      "label": "全脂奶 468g（约 454ml）",
      "kcal": 295.0,
-     "protein": 15.4
+     "protein": 15.4,
+     "fat": 15.4,
+     "carbs": 21.8
     },
     {
      "name": "鸡蛋",
      "label": "鸡蛋 3个",
      "kcal": 210.0,
-     "protein": 18.9
+     "protein": 18.9,
+     "fat": 14.4,
+     "carbs": 1.2
     },
     {
      "name": "Super Nature Wellness Bowl 鸡肉 Pad Thai 350g",
      "label": "Super Nature Wellness Bowl 鸡肉 Pad Thai 350g 1份",
      "kcal": 260.0,
-     "protein": 12.6
+     "protein": 12.6,
+     "fat": 6.0,
+     "carbs": 37.0
     },
     {
      "name": "炒鸡腿肉 + 蔬菜 一盒 221g（估：鸡腿约 180g + 蔬菜 + 油）",
      "label": "炒鸡腿肉 + 蔬菜 一盒 221g（估：鸡腿约 180g + 蔬菜 + 油）",
      "kcal": 435.0,
-     "protein": 48.0
+     "protein": 48.0,
+     "fat": 23.4,
+     "carbs": 8.0
     },
     {
      "name": "草莓",
      "label": "草莓 200g",
      "kcal": 64.0,
-     "protein": 1.4
+     "protein": 1.4,
+     "fat": 0.6,
+     "carbs": 14.0
     },
     {
      "name": "晚饭：炒鸡腿肉 + 蔬菜 第二盒 216g（估：鸡腿约 175g + 蔬菜 + 油）",
      "label": "晚饭：炒鸡腿肉 + 蔬菜 第二盒 216g（估：鸡腿约 175g + 蔬菜 + 油）",
      "kcal": 425.0,
-     "protein": 47.0
+     "protein": 47.0,
+     "fat": 22.8,
+     "carbs": 8.0
     }
    ],
    "ex": []
@@ -423,37 +537,49 @@
      "name": "全脂奶",
      "label": "全脂奶 264g（约 256ml）",
      "kcal": 166.0,
-     "protein": 8.7
+     "protein": 8.7,
+     "fat": 8.7,
+     "carbs": 12.3
     },
     {
      "name": "Fitness Outcomes 是拉差鸡肉西兰花饭 350g",
      "label": "Fitness Outcomes 是拉差鸡肉西兰花饭 350g 1份",
      "kcal": 337.0,
-     "protein": 28.4
+     "protein": 28.4,
+     "fat": 8.1,
+     "carbs": 37.8
     },
     {
      "name": "鸡蛋",
      "label": "鸡蛋 3个",
      "kcal": 210.0,
-     "protein": 18.9
+     "protein": 18.9,
+     "fat": 14.4,
+     "carbs": 1.2
     },
     {
      "name": "炒鸡腿肉 + 蔬菜 一盒 223g（估：鸡腿约 180g + 蔬菜 + 油）",
      "label": "炒鸡腿肉 + 蔬菜 一盒 223g（估：鸡腿约 180g + 蔬菜 + 油）",
      "kcal": 440.0,
-     "protein": 48.0
+     "protein": 48.0,
+     "fat": 24.0,
+     "carbs": 8.0
     },
     {
      "name": "烤南瓜 178g（估，含少量油）",
      "label": "烤南瓜 178g（估，含少量油）",
      "kcal": 110.0,
-     "protein": 2.0
+     "protein": 2.0,
+     "fat": 3.0,
+     "carbs": 18.0
     },
     {
      "name": "烤鸡（外卖半只里的一块）230g 带皮带骨（估：可吃约 170g）",
      "label": "烤鸡（外卖半只里的一块）230g 带皮带骨（估：可吃约 170g）",
      "kcal": 400.0,
-     "protein": 45.0
+     "protein": 45.0,
+     "fat": 24.0,
+     "carbs": 0.0
     }
    ],
    "ex": []
