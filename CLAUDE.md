@@ -17,8 +17,9 @@ Joey 用中文写，回复也用中文，简短、口语，不要长篇大论。
 
 ```
 python3 tools/log.py lib "鸡蛋" 3                          # 食物库里有的，按数量换算
-python3 tools/log.py food "麦当劳双层吉士（估）" 450 25    # 外食 / 估算，label 写清楚是什么
-python3 tools/log.py addlib "某酸奶" 100 g 62 10           # 有营养表的包装食品，先加进食物库
+python3 tools/log.py food "麦当劳双层吉士（估）" 450 25 22 35   # 外食 / 估算：kcal 蛋白 脂肪 碳水，label 写清楚是什么
+python3 tools/log.py addlib "某酸奶" 100 g 62 10 0.2 4.5   # 有营养表的包装食品，先加进食物库（同样带脂肪 碳水）
+python3 tools/log.py macros food 2 8 30                    # 给当天第 2 条补上 脂肪 8g 碳水 30g
 python3 tools/log.py weight 88.3
 python3 tools/log.py ex 快走 53 230
 python3 tools/log.py coach "点评文字"
@@ -27,6 +28,7 @@ python3 tools/log.py summary                               # 每次记完都看�
 
 - 有营养表就按营养表（kJ ÷ 4.184 = kcal）；没有就按常见份量估，宁可略高估，label 里写「（估）」。
 - 一张照片里有多样东西，分条记。
+- 每条都写上脂肪和碳水（g）。估的时候先定蛋白和脂肪，碳水 ≈ (kcal − 蛋白×4 − 脂肪×9) ÷ 4，`check.py` 会核对四个数对不对得上。
 - 记完提交并推送到 `main`，提交信息写「记录 11-16 午饭：GYG burrito」这种。推送后网页会自动重新打包发布，大约 1 分钟后刷新就能看到。
 
 ## 回复 Joey

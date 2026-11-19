@@ -45,14 +45,14 @@ export function renderToday() {
     ? `还差 <b>${r0(short)}</b> g ≈ 熟鸡胸 ${r0(short / 31 * 100)} g`
     : '已达标 ✓';
 
-  // 每天能吃的三大营养素（目标）。记录里只有热量和蛋白，碳水、脂肪只显示目标
+  // 三大营养素：已吃 / 每天目标。没记脂肪、碳水的条目不算进去，会在标题里说明
   const m = macros(p);
+  const mc = (cls: string, name: string, ate: number, goal: number) => `
+      <div class="mc ${cls}"><span>${name}</span><b>${r0(ate)}<small> g</small></b>
+        <i class="mc-bar"><i style="width:${Math.min(100, goal ? ate / goal * 100 : 0)}%"></i></i><em>目标 ${r0(goal)} g</em></div>`;
   $('macroBox').innerHTML = `
-    <div class="mc-h">每天可以吃 <small>按 ${r0(p.target)} kcal</small></div>
-    <div class="mc-row">
-      <div class="mc p"><span>蛋白质</span><b>${r0(m.protein)}<small> g</small></b><em>${r0(m.protein * 4)} kcal</em></div>
-      <div class="mc c"><span>碳水</span><b>${r0(m.carbs)}<small> g</small></b><em>${r0(m.carbs * 4)} kcal</em></div>
-      <div class="mc f"><span>脂肪</span><b>${r0(m.fat)}<small> g</small></b><em>${r0(m.fat * 9)} kcal</em></div>
+    <div class="mc-h">三大营养素 <small>已吃 / 目标（按 ${r0(p.target)} kcal）${t.noMacro ? ` · ${t.noMacro} 条没记碳水脂肪` : ''}</small></div>
+    <div class="mc-row">${mc('p', '蛋白质', t.protein, m.protein)}${mc('c', '碳水', t.carbs, m.carbs)}${mc('f', '脂肪', t.fat, m.fat)}
     </div>`;
 
   let hint = '';
@@ -147,7 +147,7 @@ function renderFoods(p: ReturnType<typeof plan>, t: Totals) {
         <div><span>占当天热量</span><b>${t.kcal ? r0(f.kcal / t.kcal * 100) : 0}<small>%</small></b></div>
         <div><span>占蛋白目标</span><b>${r0(f.protein / p.protein * 100)}<small>%</small></b></div>
         <div><span>每 100 kcal 蛋白</span><b class="${dens >= goalRatio ? 'ok' : dens >= goalRatio / 2 ? '' : 'warn'}">${r1(dens)}<small>g</small></b></div>
-        <div class="fd-note">${verdict}${lib ? `<br>食物库：每 ${lib.per}${esc(lib.unit)} ${lib.kcal} kcal · ${lib.protein} g 蛋白` : ''}</div>
+        <div class="fd-note">${f.fat != null && f.carbs != null ? `碳水 ${r1(f.carbs)} g · 脂肪 ${r1(f.fat)} g<br>` : ''}${verdict}${lib ? `<br>食物库：每 ${lib.per}${esc(lib.unit)} ${lib.kcal} kcal · ${lib.protein} g 蛋白` : ''}</div>
       </div></div></div>
       <button class="del" data-food="${i}" aria-label="删除">×</button></li>`;
   }).join('')
