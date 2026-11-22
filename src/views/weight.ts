@@ -4,6 +4,7 @@ import { weightSeries, type WeightPoint } from '../calc';
 import { $, $in, r0, r1, shift, today, toast } from '../util';
 import { animateNums, applyFlash, confetti, flashBtn, numSpan, removeAnimated, setFlash, shakeEl } from '../anim';
 import { renderToday } from './today';
+import { renderBody } from './body';
 
 const days = (a: string, b: string) => (new Date(a).getTime() - new Date(b).getTime()) / 864e5;
 
@@ -45,6 +46,7 @@ export function renderWeight() {
      <button class="del" data-w="${s.date}" aria-label="删除">×</button></li>`;
   }).reverse().slice(0, 60).join('') || '<li class="muted empty">还没记录</li>';
   applyFlash('wList');
+  renderBody();
 }
 
 const WK = (ds: string) => '周' + '日一二三四五六'[new Date(ds + 'T12:00:00').getDay()];
