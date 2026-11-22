@@ -165,15 +165,6 @@
    "carbs": 3.5
   },
   {
-   "name": "Super Nature Wellness Bowl 鸡肉 Pad Thai 350g",
-   "per": 1.0,
-   "unit": "份",
-   "kcal": 260.0,
-   "protein": 12.6,
-   "fat": 6.0,
-   "carbs": 37.0
-  },
-  {
    "name": "鸡腿肉（熟，去皮）",
    "per": 100.0,
    "unit": "g",
@@ -208,6 +199,15 @@
    "protein": 0.6,
    "fat": 0.2,
    "carbs": 7.6
+  },
+  {
+   "name": "Super Nature Wellness Bowl 鸡肉 Pad Thai 350g",
+   "per": 1.0,
+   "unit": "份",
+   "kcal": 260.0,
+   "protein": 12.6,
+   "fat": 9.5,
+   "carbs": 29.1
   }
  ],
  "days": {
@@ -715,6 +715,35 @@
     }
    ],
    "ex": []
+  },
+  "2026-11-22": {
+   "foods": [
+    {
+     "name": "Super Nature Wellness Bowl 鸡肉 Pad Thai 350g",
+     "label": "Super Nature Wellness Bowl 鸡肉 Pad Thai 350g 1份",
+     "kcal": 260.0,
+     "protein": 12.6,
+     "fat": 9.5,
+     "carbs": 29.1
+    },
+    {
+     "name": "鸡蛋",
+     "label": "鸡蛋 3个",
+     "kcal": 210.0,
+     "protein": 18.9,
+     "fat": 14.4,
+     "carbs": 1.2
+    },
+    {
+     "name": "全脂奶",
+     "label": "全脂奶 468g（约 454ml）",
+     "kcal": 295.0,
+     "protein": 15.4,
+     "fat": 15.4,
+     "carbs": 21.8
+    }
+   ],
+   "ex": []
   }
  },
  "weights": {
@@ -729,7 +758,7 @@
  },
  "setupDone": true,
  "coach": {
-  "updated": "2026-11-21T22:12+11:00",
-  "text": "11-21 复盘：约 1500 kcal / 123g 蛋白，刚好卡在今天自己定的 1500 以内，蛋白差一点。体重 88.8，7 天平均 88.7，昨天卤面存的水还没退；离 11-30 还剩 9 天差 3.7 kg，85 准时到不现实，按 1600 左右吃均值会慢慢降。明天：早上牛奶 + 3 蛋，午饭鸡胸或瘦牛肉 200g + 蔬菜 + 半碗饭，晚饭一份肉 + 蔬菜不吃主食，少放油。"
+  "updated": "2026-11-22T11:34+11:00",
+  "text": "11-22：到现在 Pad Thai 碗 + 3 蛋 + 一杯牛奶，约 765 kcal / 47g 蛋白。还剩约 840 kcal，蛋白差 113g。后面两顿都靠肉：午饭鸡胸或瘦牛肉 200–250g + 蔬菜，晚饭一样，主食最多半碗，少放油。"
  }
 }
