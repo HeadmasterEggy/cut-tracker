@@ -51,6 +51,12 @@ def check_macros(where, f, hi):
             err(where, f"蛋白×4 + 脂肪×9 + 碳水×4 = {est:.0f} kcal，和记的 {f['kcal']:.0f} kcal 差太多，多半是脂肪/碳水写反或打错")
 
 
+# body 里每个字段的合理范围（tools/log.py 的 BODY 表是同一份，改一个要改另一个）
+BODY = {"weight": (30, 300), "bodyFat": (3, 60), "fatMass": (1, 150), "leanMass": (20, 150),
+        "muscle": (15, 120), "water": (30, 80), "bone": (1, 8), "bmr": (800, 4000),
+        "protein": (5, 30), "visceral": (1, 30), "subFat": (3, 60)}
+
+
 def check_log():
     path = ROOT / "data" / "log.json"
     if not path.exists():
@@ -150,6 +156,31 @@ def check_log():
         if not is_date(ds):
             err(f"weights[{ds}]", "键应该是 YYYY-MM-DD 日期")
         check_num(f"weights[{ds}]", v, 30, 300)
+
+    body = d.get("body", {})
+    if not isinstance(body, dict):
+        err("body", "应该是 {日期: {...}} 对象")
+        body = {}
+    for ds, b in body.items():
+        w = f"body[{ds}]"
+        if not is_date(ds):
+            err(w, "键应该是 YYYY-MM-DD 日期")
+        if not isinstance(b, dict):
+            err(w, "应该是对象（tools/log.py body bf=... fat=...）")
+            continue
+        for k, v in b.items():
+            if k == "time":
+                if not (isinstance(v, str) and len(v) == 5 and v[2] == ":" and v.replace(":", "").isdigit()):
+                    err(f"{w}.time", f"应该是 HH:MM，现在是 {v!r}")
+            elif k in BODY:
+                check_num(f"{w}.{k}", v, *BODY[k])
+            else:
+                err(w, f"不认识的字段 {k!r}，可以有：time, " + ", ".join(BODY) + "（加新字段要同时改 src/types.ts 的 BodyComp）")
+        bw = b.get("weight", ws.get(ds))
+        if all(is_num(x) for x in (bw, b.get("fatMass"), b.get("leanMass"))) and abs(b["fatMass"] + b["leanMass"] - bw) > 1:
+            err(w, f"脂肪 {b['fatMass']} + 去脂 {b['leanMass']} = {b['fatMass'] + b['leanMass']:.2f} kg，和体重 {bw} 差超过 1 kg，多半打错了")
+        if all(is_num(x) for x in (bw, b.get("fatMass"), b.get("bodyFat"))) and abs(b["fatMass"] / bw * 100 - b["bodyFat"]) > 1.5:
+            err(w, f"脂肪 {b['fatMass']} kg ÷ 体重 {bw} = {b['fatMass'] / bw * 100:.1f}%，和体脂率 {b['bodyFat']}% 对不上，多半打错了")
 
     if "coach" in d:
         c = d["coach"]

@@ -52,6 +52,22 @@ export interface Coach {
   text: string;
 }
 
+/** 体脂秤的一次读数。秤给什么记什么，全部可选（tools/log.py body 写入） */
+export interface BodyComp {
+  time?: string; // 称的时间 HH:MM
+  weight?: number; // 那次秤上的体重 kg（没写就用 weights 里当天的）
+  bodyFat?: number; // 体脂率 %
+  fatMass?: number; // 脂肪量 kg
+  leanMass?: number; // 去脂体重 kg
+  muscle?: number; // 肌肉量 kg
+  water?: number; // 水分 %
+  bone?: number; // 骨量 kg
+  bmr?: number; // 秤算的基础代谢 kcal
+  protein?: number; // 蛋白质率 %
+  visceral?: number; // 内脏脂肪等级
+  subFat?: number; // 皮下脂肪率 %
+}
+
 /** 'YYYY-MM-DD' 日期字符串 */
 export type DateStr = string;
 
@@ -60,6 +76,7 @@ export interface LogData {
   foods: LibFood[];
   days: Record<DateStr, Day>;
   weights: Record<DateStr, number>;
+  body?: Record<DateStr, BodyComp>; // 体脂秤读数，一天一条（同一天再称会覆盖）
   coach?: Coach;
 }
 
