@@ -926,6 +926,14 @@
      "protein": 39.0,
      "fat": 14.0,
      "carbs": 1.0
+    },
+    {
+     "name": "Ruffie 墨西哥鸡肉 burrito bowl 350g",
+     "label": "Ruffie 墨西哥鸡肉 burrito bowl 350g 1份",
+     "kcal": 308.0,
+     "protein": 14.8,
+     "fat": 6.1,
+     "carbs": 46.3
     }
    ],
    "ex": []
@@ -948,7 +956,7 @@
  "setupDone": true,
  "coach": {
   "updated": "2026-11-25T13:37+11:00",
-  "text": "11-25：早上 86.95，7 天平均 88.0。已吃 287 kcal、蛋白 39 g。还剩约 1300 kcal，蛋白差约 120 g：一杯奶 + 3 个蛋，晚饭 250g 鸡胸或瘦肉 + 一大份蔬菜，睡前 200g five:am 酸奶，主食一样、水果 150g 以内。"
+  "text": "11-25：早上 86.95，7 天平均 88.0。午饭烤鸡 + Ruffie burrito bowl，已吃 595 kcal、蛋白 54 g。还剩约 990 kcal，蛋白差约 100 g：晚饭 300g 鸡胸或瘦肉 + 一大份蔬菜，睡前 200g five:am 酸奶。主食今天已经有了，水果 150g 以内。"
  },
  "body": {
   "2026-11-22": {
