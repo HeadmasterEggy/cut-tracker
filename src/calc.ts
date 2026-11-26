@@ -21,10 +21,10 @@ export function plan(): Plan {
 
 export interface Macros { protein: number; fat: number; carbs: number }
 
-/** 每天三大营养素目标：蛋白按设置的 g/kg，脂肪 0.8 g/kg 体重，剩下的热量给碳水 */
+/** 每天三大营养素目标：蛋白、脂肪按设置的 g/kg（脂肪不写就是 0.8），剩下的热量给碳水 */
 export const FAT_PER_KG = 0.8;
 export function macros(p: Plan): Macros {
-  const fat = p.w * FAT_PER_KG;
+  const fat = p.w * Number(S.settings.fatK ?? FAT_PER_KG);
   const carbs = Math.max(0, (p.target - p.protein * 4 - fat * 9) / 4);
   return { protein: p.protein, fat, carbs };
 }

@@ -12,6 +12,7 @@ export interface Settings {
   act: number | string; // 活动系数；设置页 <select> 里是字符串，用的时候 Number()
   deficit: number; // 每日热量缺口 kcal
   protK: number; // 蛋白质 g / kg 体重
+  fatK?: number; // 脂肪 g / kg 体重，不写就是 0.8
   goalDate?: string; // YYYY-MM-DD
 }
 

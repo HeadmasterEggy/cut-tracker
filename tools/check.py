@@ -87,6 +87,8 @@ def check_log():
         check_num("settings.goal", s.get("goal"), 30, 300)
         check_num("settings.deficit", s.get("deficit"), 0, 1500)
         check_num("settings.protK", s.get("protK"), 0.5, 3.5)
+        if "fatK" in s:
+            check_num("settings.fatK", s.get("fatK"), 0.3, 1.5)
         try:
             check_num("settings.act", float(s.get("act")), 1.0, 2.5)
         except (TypeError, ValueError):
