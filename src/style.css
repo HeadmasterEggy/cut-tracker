@@ -382,6 +382,15 @@ svg text { fill: var(--faint); font-size: 11px; font-family: -apple-system, "Pin
 .tip b { font-family: var(--num); font-size: 14px; }
 
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+/* 体成分卡 */
+.bc-story { margin: 0 0 12px; font-size: 14px; line-height: 1.6; }
+.bc-story:empty { display: none; }
+.bc-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.stat.bc b { font-size: 18px; } .stat.bc b small { font-size: 11px; color: var(--muted); font-weight: 500; margin-left: 3px; }
+.stat.bc .delta { display: inline-block; margin-top: 2px; font-size: 11px; }
+.stat.bc em { display: block; font-style: normal; font-size: 11px; color: var(--faint); margin-top: 2px; }
+#wBodyChart { margin-top: 12px; }
+.bc-note { font-size: 12px; margin-top: 12px; color: var(--faint); }
 .stat { background: var(--card-2); border-radius: 14px; padding: 10px 12px; border: 1px solid transparent; transition: border-color .3s, transform .3s var(--spring); min-width: 0; }
 .stat:active { transform: scale(.97); border-color: var(--line); }
 .stat .muted { font-size: 12px; }
@@ -527,6 +536,8 @@ svg text { fill: var(--faint); font-size: 11px; font-family: -apple-system, "Pin
   #wStats { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
   #wStats .stat b { font-size: 22px; }
   .w-stats { padding: 14px; }
+  .bc-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+  .stat.bc b { font-size: 22px; }
   #wList { max-height: 420px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #334155 transparent; }
 
   /* 食物库 */

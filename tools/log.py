@@ -10,6 +10,9 @@
   tools/log.py addlib "名称" 100 g 499 8.2 [脂肪 碳水]  # 新增/更新食物库：每 100g 499kcal 8.2g 蛋白
   tools/log.py macros food|lib N|名称 脂肪 碳水 [--date D]  # 给已有的一条 / 食物库项补上脂肪碳水
 脂肪、碳水单位都是 g，可以不写（旧数据没有）；写了就两个都写。
+  tools/log.py body bf=25.4 fat=22.38 lean=65.72 muscle=51.63 water=54.6 bone=3.2 bmr=1808 \
+                    protein=15.9 visceral=8 subq=22.7 [w=88.1] [time=11:27] [--date D]
+                                                   # 体脂秤读数，秤给什么写什么；同一天再记会覆盖
   tools/log.py coach "点评文字"                    # 更新网页顶部的点评
   tools/log.py summary [--date D]                  # 打印当天和最近 7 天情况
 """
@@ -90,6 +93,56 @@ def fat_carbs(x, i):
     return {"fat": round(float(x[i]), 1), "carbs": round(float(x[i + 1]), 1)}
 
 
+# body 命令的简写 → log.json 里的字段名、合理范围（tools/check.py 里有同一张表）
+BODY = {"w": ("weight", 30, 300), "bf": ("bodyFat", 3, 60), "fat": ("fatMass", 1, 150),
+        "lean": ("leanMass", 20, 150), "muscle": ("muscle", 15, 120), "water": ("water", 30, 80),
+        "bone": ("bone", 1, 8), "bmr": ("bmr", 800, 4000), "protein": ("protein", 5, 30),
+        "visceral": ("visceral", 1, 30), "subq": ("subFat", 3, 60)}
+
+
+def body_entry(d, ds, args):
+    e = {}
+    for a in args:
+        k, _, v = a.partition("=")
+        if k == "time":
+            datetime.strptime(v, "%H:%M")
+            e["time"] = v
+            continue
+        if k not in BODY or not v:
+            sys.exit(f"不认识「{a}」。可以写：time=HH:MM " + " ".join(f"{k}=数字" for k in BODY))
+        name, lo, hi = BODY[k]
+        x = float(v)
+        if not lo <= x <= hi:
+            sys.exit(f"{k}={v} 不在合理范围 {lo}–{hi}，看看是不是打错了")
+        e[name] = round(x, 2)
+    # 只有体脂率时，按体重补上脂肪量和去脂体重（秤也是这么算的：脂肪 = 体重 × 体脂率）
+    w = e.get("weight") or d["weights"].get(ds)
+    if w and "bodyFat" in e and "fatMass" not in e:
+        e["fatMass"] = round(w * e["bodyFat"] / 100, 2)
+    if w and "fatMass" in e and "leanMass" not in e:
+        e["leanMass"] = round(w - e["fatMass"], 2)
+    return e
+
+
+def body_summary(d, ds):
+    b = d.get("body", {})
+    ks = sorted(k for k in b if k <= ds)
+    if not ks:
+        return
+    cur, prev = b[ks[-1]], (b[ks[-2]] if len(ks) > 1 else {})
+    def f(key, name, unit, dec=1):
+        if key not in cur:
+            return None
+        s = f"{name} {cur[key]:.{dec}f}{unit}"
+        if key in prev:
+            dl = cur[key] - prev[key]
+            s += f"（{dl:+.{dec}f}）"
+        return s
+    parts = [f("bodyFat", "体脂", "%"), f("fatMass", "脂肪", " kg"), f("leanMass", "去脂", " kg"),
+             f("muscle", "肌肉", " kg"), f("visceral", "内脏脂肪", "", 0)]
+    print(f"体成分（{ks[-1]}" + (f"，比 {ks[-2]}" if prev else "") + "）：" + "，".join(p for p in parts if p))
+
+
 def summary(d, ds):
     p, (k, pr, m) = plan(d, ds), totals(d, ds)
     print(f"{ds}：已吃 {k:.0f} / {p['target']:.0f} kcal（剩 {p['target'] - k:.0f}），"
@@ -120,6 +173,7 @@ def summary(d, ds):
             gap = sum(recent) / len(recent) - d["settings"]["goal"]
             if left > 0 and gap > 0:
                 print(f"离 {gd} 还剩 {left} 天，还差 {gap:.1f} kg，需要每周 {gap / left * 7:.1f} kg")
+    body_summary(d, ds)
 
 
 def main():
@@ -155,6 +209,11 @@ def main():
         assert 30 < v < 300, "体重不合理"
         d["weights"][ds] = round(v, 1)
         d["weights"] = dict(sorted(d["weights"].items()))
+    elif c == "body":
+        if not x:
+            sys.exit(__doc__)
+        d.setdefault("body", {})[ds] = body_entry(d, ds, x)
+        d["body"] = dict(sorted(d["body"].items()))
     elif c == "rm":
         key = {"food": "foods", "ex": "ex"}[x[0]]
         removed = day(d, ds)[key].pop(int(x[1]) - 1)
