@@ -63,7 +63,7 @@ def plan(d, ds=None):
     tdee = bmr * float(s["act"])
     floor = 1500 if s["sex"] == "m" else 1200
     return {"w": w, "tdee": tdee, "target": max(tdee - s["deficit"], floor), "floor": floor,
-            "protein": w * s["protK"]}
+            "protein": w * s["protK"], "fatK": float(s.get("fatK", 0.8))}
 
 
 def totals(d, ds):
@@ -79,8 +79,8 @@ def macro_totals(d, ds):
 
 
 def macro_plan(p):
-    """和网页 calc.ts 的 macros() 同一个公式：脂肪 0.8 g/kg，剩下给碳水。"""
-    fat = p["w"] * 0.8
+    """和网页 calc.ts 的 macros() 同一个公式：脂肪按 settings.fatK（默认 0.8）g/kg，剩下给碳水。"""
+    fat = p["w"] * p["fatK"]
     return fat, max(0, (p["target"] - p["protein"] * 4 - fat * 9) / 4)
 
 

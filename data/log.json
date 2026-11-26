@@ -8,7 +8,8 @@
   "act": 1.2,
   "deficit": 700,
   "protK": 1.6,
-  "goalDate": "2026-11-30"
+  "goalDate": "2026-11-30",
+  "fatK": 0.57
  },
  "foods": [
   {
