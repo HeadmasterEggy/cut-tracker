@@ -1,6 +1,6 @@
 // 「今天」页：进度环、吃了什么、运动、日期切换
 import { S, curDate, setCurDate, day, save } from '../state';
-import { deficitPlan, macros, plan, totals, type Totals } from '../calc';
+import { deficitPlan, KCAL_PER_KG, macros, plan, totals, type Totals } from '../calc';
 import { $, $in, $sel, esc, r0, r1, shift, today, toast } from '../util';
 import {
   RM, animateNums, applyFlash, confetti, countTo, flashBtn, floatText, numSpan, removeAnimated, retrigger,
@@ -175,15 +175,16 @@ function renderDeficit(tdee: number, eaten: number, isToday: boolean) {
     $('deficitNote').textContent = $('deficitDone').innerHTML = ''; $('deficitBar').style.width = '100%';
     return;
   }
-  const over = dp.daysLeft <= 0, floor = plan().floor, eat = tdee - dp.perDay, low = eat < floor;
-  const tone = (v: boolean) => v ? 'bad' : 'ok';
+  // 来不及时（要的缺口比吃到下限还大），「可吃」按下限显示，不会出现负数
+  const over = dp.daysLeft <= 0, floor = plan().floor, late = dp.perDay > dp.maxPerDay;
+  const eat = Math.max(floor, tdee - dp.perDay), def = late ? dp.maxPerDay : dp.perDay;
   box.innerHTML = over
     ? `<div class="dz-key"><div class="dz-tile warn"><span>目标日期 ${dp.goalDate}</span><b>已到期</b></div></div>`
     : `<div class="dz-key">
-      <div class="dz-tile ${dp.perDay > dp.maxPerDay ? 'warn' : 'ok'}"><span>每天需要缺口</span><b>${k(dp.perDay)}<small>kcal</small></b><em>剩 ${dp.daysLeft} 天（含今天）</em></div>
-      <div class="dz-tile ${tone(low)}"><span>每天只能吃</span><b>${k(eat)}<small>kcal</small></b><em>${low ? `低于 ${floor} 下限` : '按这个吃能按时到'}</em></div>
+      <div class="dz-tile ${late ? 'warn' : 'ok'}"><span>每天需要缺口</span><b>${k(dp.perDay)}<small>kcal</small></b><em>${late ? `剩 ${dp.daysLeft} 天，来不及` : `剩 ${dp.daysLeft} 天（含今天）`}</em></div>
+      <div class="dz-tile ${late ? 'warn' : 'ok'}"><span>${late ? '按下限吃' : '每天只能吃'}</span><b>${k(eat)}<small>kcal</small></b><em>${late ? `${dp.goalDate.slice(5)} 大约到 ${r1(dp.projected)} kg` : '按这个吃能按时到'}</em></div>
     </div>
-    <div class="dz-eq">消耗 <b>${k(tdee)}</b><i>−</i>缺口 <b>${k(dp.perDay)}</b><i>=</i>可吃 <b class="${tone(low)}">${k(eat)}</b></div>`;
+    <div class="dz-eq">消耗 <b>${k(tdee)}</b><i>−</i>缺口 <b>${k(def)}</b><i>=</i>可吃 <b class="${late ? 'warn' : 'ok'}">${k(eat)}</b></div>`;
   box.innerHTML += `<div class="dz-mini">
       <div><span>还差总缺口</span><b>${k(dp.remaining)}<small>kcal</small></b><em>${w} → ${goal} kg</em></div>
       <div><span>${isToday ? '今天缺口（到目前）' : '当天缺口'}</span><b class="${dayDef < 0 ? 'bad' : ''}">${dayDef < 0 ? '超 ' + k(-dayDef) : k(dayDef)}<small>kcal</small></b><em>吃了 ${k(eaten)}</em></div>
@@ -191,8 +192,8 @@ function renderDeficit(tdee: number, eaten: number, isToday: boolean) {
   const pct = dp.total ? dp.done / dp.total * 100 : 0;
   $('deficitDone').innerHTML = `<span>已完成 <b>${r0(pct)}%</b> · ${S.settings.start} → ${w} kg</span><span>${k(dp.done)} / ${k(dp.total)} kcal</span>`;
   $('deficitBar').style.width = pct + '%';
-  $('deficitNote').textContent = over ? '' : dp.perDay > dp.maxPerDay
-    ? `⚠️ ${k(eat)} kcal 低于 ${floor} 下限，不要这么吃。按 ${floor} 吃（每天缺 ${k(dp.maxPerDay)}），${dp.goalDate.slice(5)} 大约到 ${r1(dp.projected)} kg。`
+  $('deficitNote').textContent = over ? '' : late
+    ? `⚠️ 剩 ${dp.daysLeft} 天减 ${r1(dp.remaining / KCAL_PER_KG)} kg 来不及（每天要缺 ${k(dp.perDay)}，吃到下限也只能缺 ${k(dp.maxPerDay)}）。别低于 ${floor}，${dp.goalDate.slice(5)} 大约到 ${r1(dp.projected)} kg。`
     : '';
 }
 
